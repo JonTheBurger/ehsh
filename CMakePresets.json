@@ -11,7 +11,6 @@
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
-      "installDir": "${sourceDir}/build/${presetName}/install",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -21,6 +20,7 @@
       "inherits": "default",
       "displayName": "Debug",
       "description": "Debug build with default compilers",
+      "installDir": "${sourceDir}/build/${presetName}/install",
       "generator": "Ninja"
     },
     {
@@ -28,6 +28,15 @@
       "inherits": "default",
       "displayName": "Release",
       "description": "Release build with default compilers",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      }
+    },
+    {
+      "name": "cov",
+      "displayName": "Coverage",
+      "description": "Debug build with Code Coverage enabled",
       "generator": "Ninja"
     }
   ],

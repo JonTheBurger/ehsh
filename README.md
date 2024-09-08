@@ -30,6 +30,16 @@ Enjoy thrilling, pragmatic limitations, including:
 
 ## Usage
 
+```cmake
+add_subdirectory(ehsh)
+target_link_libraries(main
+  PRIVATE
+    ehsh::ehsh
+    # Or, if you want to override the weak symbols:
+    $<LINK_LIBRARY:WHOLE_ARCHIVE,ehsh::ehsh>
+)
+```
+
 ## Building
 
 This project ships with a convenience `Makefile` used for running common tasks.
@@ -48,22 +58,18 @@ $ make lint
 
 ## Contributing
 
+Pinned dependencies can be installed via [devbox](https://www.jetify.com/devbox/docs/).
+Simply run `devbox shell`, followed by one of the convenience `make` targets.
+
 ## TODO:
 
 - Tests & Coverage
 - Docs
 - Fuzz
 - Sanitizers
-- devbox.json
 - Docker
 - CI
 - Warnings
 - Packages / Update
-    - Arduino: https://arduino.github.io/arduino-cli/1.0/library-specification/#libraryproperties-file-format
-    - Platformio: https://docs.platformio.org/en/latest/manifests/library-json/index.html
-    - Conan: https://docs.conan.io/2/tutorial/creating_packages/create_your_first_package.html
     - Vcpkg: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-packaging
-    - pkgconfig: https://people.freedesktop.org/~dbn/pkg-config-guide.html
-    - ipcf
-    - Makefile
     - deb?

@@ -1,4 +1,42 @@
+/* Copyright (c) 2024 Jonathan Povirk (jontheburger at gmail dot com)
+ * Distributed under the Boost Software License, Version 1.0. (See accompanying
+ * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ */
+////////////////////////////////////////////////////////////////////////////////
+// $Headers
+////////////////////////////////////////////////////////////////////////////////
+// std
+#include <assert.h>  // assert
+#include <stdbool.h> // true
+
+// local
+#include <ehsh/ehsh.h>
+
+////////////////////////////////////////////////////////////////////////////////
+// $Functions
+////////////////////////////////////////////////////////////////////////////////
+void test_(void);
+
+////////////////////////////////////////////////////////////////////////////////
+// $Implementations
+////////////////////////////////////////////////////////////////////////////////
+// This should maybe use a real test framework, but this keeps things simple for users.
 int main(void)
 {
+  test_();
   return 0;
 }
+
+void test_(void)
+{
+  const eh_Command cmds[] = {};
+  eh_Shell shell;
+  // eh_Create(&shell);
+  // eh_Init(&shell, cmds, 0);
+  shell.Stop = true; // Run once
+
+  // eh_Exec(&shell);
+
+  // eh_Destroy(&shell);
+}
+

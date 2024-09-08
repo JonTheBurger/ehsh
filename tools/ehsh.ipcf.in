@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--USAGE:-->
+<!--First, we must add the $@PROJECT_NAME@_DIR$ variable: -->
+<!--  1. Select "Tools" -> "Configure Custom Argument Variables"-->
+<!--  2. Click "New Group"-->
+<!--  3. Enter "Libraries"-->
+<!--  4. Click "OK"-->
+<!--  5. Click "Add Variable"-->
+<!--  6. Set "Name:" to "@PROJECT_NAME@_DIR" and "Value:" to "$PROJ_DIR$/...path...to.../ehsh"-->
+<!--  7. Click "OK"-->
+<!--Next, we must add the project connection file:-->
+<!--  1. Select "Project" -> "Add Project Connection..."-->
+<!--  2. Choose "IAR Project Connection"-->
+<!--  3. Select the "@PROJECT_NAME@.ipcf" file-->
+<!--  4. Click "OK"-->
+<iarProjectConnection version="1.5" name="Libraries/@PROJECT_NAME@" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="IarProjectConnection_1.5.xsd">
+  <includePath>
+    <path>$@PROJECT_NAME@_DIR$/src</path>
+  </includePath>
+  <defines>
+  </defines>
+  <files>
+    <group name="@PROJECT_NAME@">
+      <path>$@PROJECT_NAME@_DIR$/src/ehsh.c</path>
+      <path>$@PROJECT_NAME@_DIR$/src/ehsh.h</path>
+    </group>
+  </files>
+</iarProjectConnection>

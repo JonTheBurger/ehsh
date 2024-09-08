@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/schema/library.json",
+  "name": "@PROJECT_NAME@",
+  "version": "@PROJECT_VERSION@",
+  "description": "@PROJECT_DESCRIPTION@",
+  "keywords": [
+    "command line",
+    "communication",
+    "console",
+    "serial",
+    "shell",
+    "uart"
+  ],
+  "homepage": "@PROJECT_HOMEPAGE_URL@",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JonTheBurger/ehsh.git"
+  },
+  "license": "BSL-1.0",
+  "frameworks": "*",
+  "platforms": "*",
+  "headers": [
+    "ehsh/ehsh.h"
+  ],
+  "export": {
+    "include": [
+      "src/*"
+    ]
+  },
+  "build": {
+    "includeDir": "src",
+    "srcDir": "src"
+  },
+  "libArchive": false
+}

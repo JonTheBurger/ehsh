@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
+  "packages": [
+    "clang-tools@18.1.8",
+    "clang@18.1.8",
+    "cmake@3.29.6",
+    "cppcheck@2.15.0",
+    "gcc@14.2.0",
+    "gcovr@7.2",
+    "ninja@1.12.1"
+  ],
+  "shell": {
+    "init_hook": [
+      "make help"
+    ]
+  }
+}

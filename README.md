@@ -18,6 +18,7 @@ Be amazed by state-of-the-art (for embedded) features, such as:
     - `memset`
     - `strchr`
     - `strncmp`
+    - `strncpy`
     - `<stdbool.h>`
     - `<stdint.h>`
 - Actually tested & packaged (Pinky swear!)!

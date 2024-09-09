@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Macros
 ////////////////////////////////////////////////////////////////////////////////
+#define EHSH_BACKSPACE "\x08"
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Types
@@ -75,20 +76,37 @@ static void EhOnBackspace(EhShell_t* self)
     if (self->Tty)
     {
       // Move cursor left, print space, move cursor left
-      EhPutStr(self, "\08 \08");
+      EhPutStr(self, EHSH_BACKSPACE " " EHSH_BACKSPACE);
     }
   }
 }
 
 static void EhOnTab(EhShell_t* self)
 {
+  uint8_t matches = 0;
+  uint8_t lastMatch = 0;
+
   for (size_t i = 0; (i < self->CmdCount); ++i)
   {
-    if ((self->Cmds[i].Name != NULL) && (strncmp(self->CmdLine, self->Cmds[i].Name, EHSH_CMDLINE_SIZE) == 0))
+    if ((self->Cmds[i].Name != NULL) && (strncmp(self->CmdLine, self->Cmds[i].Name, self->Cursor) == 0))
     {
-      EhPutStr(self, self->Cmds[i].Name);
+      ++matches;
+      lastMatch = i;
       EhPutNewline(self);
+      EhPutStr(self, self->Cmds[i].Name);
     }
+  }
+
+  if (matches)
+  {
+    if (matches == 1)
+    {
+      strncpy(&self->CmdLine[0], self->Cmds[lastMatch].Name, sizeof(self->CmdLine));
+      self->Cursor = strnlen(&self->CmdLine[0], EHSH_CMDLINE_SIZE);
+    }
+    EhPutNewline(self);
+    EhPutStr(self, EHSH_PROPMT);
+    EhPutStr(self, self->CmdLine);
   }
 }
 
@@ -156,7 +174,17 @@ void EhExec(EhShell_t* self)
     }
     else if (c == '\t')
     {
-      EhOnTab(self);
+      if (self->Tty)
+      {
+        EhOnTab(self);
+      }
+    }
+    else if (c == '-')
+    {
+      if (self->Tty)
+      {
+        EhOnTab(self);
+      }
     }
     else
     {

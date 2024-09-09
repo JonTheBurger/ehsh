@@ -6,8 +6,8 @@
 // $Headers
 ////////////////////////////////////////////////////////////////////////////////
 // std
-#include <assert.h>  // assert
-#include <stdbool.h> // true
+#include <assert.h>   // assert
+#include <stdbool.h>  // true
 
 // local
 #include <ehsh/ehsh.h>
@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
-void test_(void);
+void Test(void);
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Implementations
@@ -23,20 +23,10 @@ void test_(void);
 // This should maybe use a real test framework, but this keeps things simple for users.
 int main(void)
 {
-  test_();
+  Test();
   return 0;
 }
 
-void test_(void)
+void Test(void)
 {
-  const eh_Command cmds[] = {};
-  eh_Shell shell;
-  // eh_Create(&shell);
-  // eh_Init(&shell, cmds, 0);
-  shell.Stop = true; // Run once
-
-  // eh_Exec(&shell);
-
-  // eh_Destroy(&shell);
 }
-

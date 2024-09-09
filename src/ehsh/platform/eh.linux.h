@@ -6,6 +6,7 @@
 // $Headers
 ////////////////////////////////////////////////////////////////////////////////
 // std
+#include <stdint.h>
 #include <string.h>
 
 // 3rd
@@ -18,12 +19,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Globals
 ////////////////////////////////////////////////////////////////////////////////
-static struct termios gTermIO;
+static struct termios GTermIo;
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
-void eh_Init(eh_Shell* self, const eh_Command* commands, uint8_t count)
+void EhInit(EhShell_t* self, const EhCommand_t* commands, uint8_t count)
 {
   self->Cmds     = commands;
   self->CmdCount = count;
@@ -31,8 +32,8 @@ void eh_Init(eh_Shell* self, const eh_Command* commands, uint8_t count)
 
   // https://man7.org/linux/man-pages/man3/termios.3.html
   // "stty -a"
-  tcgetattr(STDIN_FILENO, &gTermIO);
-  struct termios termiosv = gTermIO;
+  tcgetattr(STDIN_FILENO, &GTermIo);
+  struct termios termiosv = GTermIo;
   cfmakeraw(&termiosv);
   if (!self->Cr)
   {
@@ -43,9 +44,9 @@ void eh_Init(eh_Shell* self, const eh_Command* commands, uint8_t count)
   tcsetattr(STDIN_FILENO, TCSANOW, &termiosv);
 }
 
-char eh_GetChar(eh_Shell* self)
+char EhGetChar(EhShell_t* self)
 {
-  char c;
+  char c = 0;
   if (read(STDIN_FILENO, &c, 1) == 0)
   {
     c = '\0';
@@ -53,13 +54,12 @@ char eh_GetChar(eh_Shell* self)
   return c;
 }
 
-void eh_PutChar(eh_Shell* self, char c)
+void EhPutChar(EhShell_t* self, char c)
 {
   write(STDOUT_FILENO, &c, 1);
 }
 
-void eh_PutStr(eh_Shell* self, const char* str)
+void EhPutStr(EhShell_t* self, const char* str)
 {
   write(STDOUT_FILENO, str, strnlen(str, 0xFF));
 }
-

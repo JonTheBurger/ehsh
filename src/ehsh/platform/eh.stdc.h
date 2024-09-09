@@ -6,6 +6,7 @@
 // $Headers
 ////////////////////////////////////////////////////////////////////////////////
 // std
+#include <stdint.h>
 #include <stdio.h>
 
 // local
@@ -15,28 +16,27 @@
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
 // TODO: this is stupid, fix this shit
-void eh_Init(eh_Shell* self, const eh_Command* commands, uint8_t count)
+void EhInit(EhShell_t* self, const EhCommand_t* commands, uint8_t count)
 {
   self->Cmds     = commands;
   self->CmdCount = count;
   self->Cursor   = 0;
 }
 
-char eh_GetChar(eh_Shell* self)
+char EhGetChar(EhShell_t* self)
 {
   (void)self;
   return getchar();
 }
 
-void eh_PutChar(eh_Shell* self, char c)
+void EhPutChar(EhShell_t* self, char c)
 {
   (void)self;
   putchar(c);
 }
 
-void eh_PutStr(eh_Shell* self, const char* str)
+void EhPutStr(EhShell_t* self, const char* str)
 {
   (void)self;
   printf("%s", str);
 }
-

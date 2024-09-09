@@ -1,29 +1,29 @@
+#include <ehsh/ehsh.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
-#include <ehsh/ehsh.h>
 
-#define RAWTERM 0
+#define RAWTERM 1
 
 #if RAWTERM
-  #include "ehsh/platform/eh.linux.h"
+#include "ehsh/platform/eh.linux.h"
 #else
-  #include "ehsh/platform/eh.stdc.h"
+#include "ehsh/platform/eh.stdc.h"
 #endif
 
-void Echo(eh_Shell* shell)
+void Echo(EhShell_t* shell)
 {
   for (size_t i = 0; i < shell->ArgCount; ++i)
   {
-    const char* arg = eh_ArgAt(shell, i);
-    eh_PutStr(shell, arg);
-    eh_PutNewline(shell);
+    const char* arg = EhArgAt(shell, i);
+    EhPutStr(shell, arg);
+    EhPutNewline(shell);
   }
 }
 
-void Help(eh_Shell* shell)
+void Help(EhShell_t* shell)
 {
-  const char* arg = eh_ArgAt(shell, 0);
+  const char* arg = EhArgAt(shell, 0);
   if (arg == NULL)
   {
     arg = "";
@@ -34,40 +34,57 @@ void Help(eh_Shell* shell)
   {
     if (strncmp(arg, shell->Cmds[i].Name, prefix) == 0)
     {
-      eh_PutStr(shell, shell->Cmds[i].Name);
-      eh_PutStr(shell, ": ");
-      eh_PutStr(shell, shell->Cmds[i].Help);
-      eh_PutNewline(shell);
+      EhPutStr(shell, shell->Cmds[i].Name);
+      EhPutStr(shell, ": ");
+      EhPutStr(shell, shell->Cmds[i].Help);
+      EhPutNewline(shell);
     }
   }
 }
 
-void Quit(eh_Shell* shell)
+void Quit(EhShell_t* shell)
 {
   shell->Stop = true;
 }
 
 int main(void)
 {
-  const eh_Command cmds[] = {
-    {"echo", "Prints arguments", &Echo, },
-    {"help", "Prints this", &Help, },
-    {"quit", "Exits", &Quit, },
+  const EhCommand_t cmds[] = {
+    {
+      "echo",
+      "Prints arguments",
+      &Echo,
+    },
+    {
+      "ecco",
+      "Prints arguments",
+      &Echo,
+    },
+    {
+      "help",
+      "Prints this",
+      &Help,
+    },
+    {
+      "quit",
+      "Exits",
+      &Quit,
+    },
   };
-  eh_Shell shell;
-  eh_Create(&shell);
-  eh_Init(&shell, cmds, sizeof(cmds) / sizeof(*cmds));
-  shell.Cr = true;
-  shell.Lf = true;
+  EhShell_t shell;
+  EhCreate(&shell);
+  EhInit(&shell, cmds, sizeof(cmds) / sizeof(*cmds));
+  shell.Cr  = true;
+  shell.Lf  = true;
   shell.Eol = EHSH_EOL_LF;
   shell.Tty = true;
 
-  eh_Exec(&shell);
+  EhExec(&shell);
 
-  eh_Destroy(&shell);
+  EhDestroy(&shell);
 
 #if RAWTERM
-  tcsetattr(STDIN_FILENO, TCSANOW, &gTermIO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &GTermIo);
 #endif
   return 0;
 }

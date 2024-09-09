@@ -6,8 +6,8 @@
 // $Headers
 ////////////////////////////////////////////////////////////////////////////////
 // std
-#include <stdbool.h> // bool
-#include <string.h>  // memset
+#include <stdbool.h>  // bool
+#include <string.h>   // memset
 
 // local
 #include <ehsh/ehsh.h>
@@ -20,53 +20,53 @@
 // $Types
 ////////////////////////////////////////////////////////////////////////////////
 /// ASCII control characters
-typedef enum eh_Ascii {
+typedef enum EhAscii {
   EHSH_ASCII_EOT = 4,    ///< End of transmission
   EHSH_ASCII_BS  = 8,    ///< Backspace
   EHSH_ASCII_DEL = 127,  ///< Delete
-} eh_Ascii;
+} EhAscii_t;
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
-/** @brief Handles the currently loaded eh_Shell.CmdLine,
+/** @brief Handles the currently loaded EhShell.CmdLine,
  * calling its handler with tokenized args.
  *
  * @param self Shell whose current command line will be handled.
  */
-static bool eh_HandleCmdLine(eh_Shell* self);
+static bool EhHandleCmdLine(EhShell_t* self);
 
 /** @brief Saves the indices of the arguments,
- * replacing spaces in eh_Shell.CmdLine with '\0'.
+ * replacing spaces in EhShell.CmdLine with '\0'.
  *
  * @param self Shell whose arguments shall be tokenized.
  */
-static void eh_Tokenize(eh_Shell* self);
+static void EhTokenize(EhShell_t* self);
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Implementations
 ////////////////////////////////////////////////////////////////////////////////
-static void eh_OnNewline(eh_Shell* self)
+static void EhOnNewline(EhShell_t* self)
 {
   if (self->Tty)
   {
-    eh_PutNewline(self);
+    EhPutNewline(self);
   }
-  if (!eh_HandleCmdLine(self))
+  if (!EhHandleCmdLine(self))
   {
-    eh_PutStr(self, EHSH_EMSG_NOCMD " \"");
-    eh_PutStr(self, self->CmdLine);
-    eh_PutChar(self, '"');
-    eh_PutNewline(self);
+    EhPutStr(self, EHSH_EMSG_NOCMD " \"");
+    EhPutStr(self, self->CmdLine);
+    EhPutChar(self, '"');
+    EhPutNewline(self);
   }
-  eh_PutStr(self, EHSH_PROPMT);
+  EhPutStr(self, EHSH_PROPMT);
 
   // Reset
   memset(&self->CmdLine[0], 0, sizeof(self->CmdLine));
   self->Cursor = 0;
 }
 
-static void eh_OnBackspace(eh_Shell* self)
+static void EhOnBackspace(EhShell_t* self)
 {
   if (self->Cursor > 0)
   {
@@ -75,17 +75,24 @@ static void eh_OnBackspace(eh_Shell* self)
     if (self->Tty)
     {
       // Move cursor left, print space, move cursor left
-      eh_PutStr(self, "\08 \08");
+      EhPutStr(self, "\08 \08");
     }
   }
 }
 
-static void eh_OnTab(eh_Shell* self)
+static void EhOnTab(EhShell_t* self)
 {
-  // TODO: Help
+  for (size_t i = 0; (i < self->CmdCount); ++i)
+  {
+    if ((self->Cmds[i].Name != NULL) && (strncmp(self->CmdLine, self->Cmds[i].Name, EHSH_CMDLINE_SIZE) == 0))
+    {
+      EhPutStr(self, self->Cmds[i].Name);
+      EhPutNewline(self);
+    }
+  }
 }
 
-static void eh_OnChar(eh_Shell* self, char c)
+static void EhOnChar(EhShell_t* self, char c)
 {
   // If the cursor is at the end of the buffer
   if (self->Cursor >= EHSH_CMDLINE_SIZE)
@@ -95,20 +102,20 @@ static void eh_OnChar(eh_Shell* self, char c)
     // and Send a backspace to the TTY
     if (self->Tty)
     {
-      eh_PutChar(self, EHSH_ASCII_BS);
+      EhPutChar(self, EHSH_ASCII_BS);
     }
   }
 
   self->CmdLine[self->Cursor] = c;
   if (self->Tty)
   {
-    eh_PutChar(self, c);
+    EhPutChar(self, c);
   }
 
   ++self->Cursor;
 }
 
-eh_Shell* eh_Create(eh_Shell* self)
+EhShell_t* EhCreate(EhShell_t* self)
 {
   if (self != NULL)
   {
@@ -117,26 +124,26 @@ eh_Shell* eh_Create(eh_Shell* self)
   return self;
 }
 
-void eh_Exec(eh_Shell* self)
+void EhExec(EhShell_t* self)
 {
-  eh_PutStr(self, EHSH_PROPMT);
+  EhPutStr(self, EHSH_PROPMT);
 
   do
   {
-    char c = eh_GetChar(self);
+    char c = EhGetChar(self);
 
     if (c == '\n')
     {
       if (self->Eol == EHSH_EOL_LF)
       {
-        eh_OnNewline(self);
+        EhOnNewline(self);
       }
     }
     else if (c == '\r')
     {
       if (self->Eol == EHSH_EOL_CR)
       {
-        eh_OnNewline(self);
+        EhOnNewline(self);
       }
     }
     else if ((c < 0) || (c == EHSH_ASCII_EOT))
@@ -145,44 +152,44 @@ void eh_Exec(eh_Shell* self)
     }
     else if (c == EHSH_ASCII_DEL)
     {
-      eh_OnBackspace(self);
+      EhOnBackspace(self);
     }
     else if (c == '\t')
     {
-      eh_OnTab(self);
+      EhOnTab(self);
     }
     else
     {
-      eh_OnChar(self, c);
+      EhOnChar(self, c);
     }
   } while (!self->Stop);
 }
 
-void eh_PutNewline(eh_Shell* self)
+void EhPutNewline(EhShell_t* self)
 {
   if (self->Cr)
   {
-    eh_PutChar(self, '\r');
+    EhPutChar(self, '\r');
   }
   if (self->Lf)
   {
-    eh_PutChar(self, '\n');
+    EhPutChar(self, '\n');
   }
 }
 
-void eh_Destroy(eh_Shell* self)
+void EhDestroy(EhShell_t* self)
 {
   (void)self;
 }
 
-static bool eh_HandleCmdLine(eh_Shell* self)
+static bool EhHandleCmdLine(EhShell_t* self)
 {
   bool found = false;
-  eh_Tokenize(self);
+  EhTokenize(self);
 
   for (size_t i = 0; ((!found) && (i < self->CmdCount)); ++i)
   {
-    if ((self->Cmds[i].Callback != NULL) && (strncmp(self->CmdLine, self->Cmds[i].Name, EHSH_CMDLINE_SIZE) == 0))
+    if ((self->Cmds[i].Callback != NULL) && (strncmp(self->Cmds[i].Name, self->CmdLine, EHSH_CMDLINE_SIZE) == 0))
     {
       found = true;
       self->Cmds[i].Callback(self);
@@ -193,7 +200,7 @@ static bool eh_HandleCmdLine(eh_Shell* self)
 }
 
 // TODO: Multiple spaces
-static void eh_Tokenize(eh_Shell* self)
+static void EhTokenize(EhShell_t* self)
 {
   self->Nul      = '\0';
   self->ArgCount = 0;
@@ -204,8 +211,8 @@ static void eh_Tokenize(eh_Shell* self)
     delim = strchr(delim, ' ');
     if (delim != NULL)
     {
-      size_t index = delim - &self->CmdLine[0];
-      self->CmdLine[index] = '\0';
+      size_t index                 = delim - &self->CmdLine[0];
+      self->CmdLine[index]         = '\0';
       self->ArgIdx[self->ArgCount] = index + 1;
       ++self->ArgCount;
       ++delim;

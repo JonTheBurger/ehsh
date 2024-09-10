@@ -13,20 +13,30 @@
 #include <ehsh/ehsh.h>
 
 ////////////////////////////////////////////////////////////////////////////////
+// $Types
+////////////////////////////////////////////////////////////////////////////////
+typedef struct EhPlatformContext {
+  char Placeholder;
+} EhPlatformContext_t;
+
+////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
-// TODO: this is stupid, fix this shit
-void EhInit(EhShell_t* self, const EhCommand_t* commands, uint8_t count)
+void EhPlatformInit(EhShell_t* self, void* context)
 {
-  self->Cmds     = commands;
-  self->CmdCount = count;
-  self->Cursor   = 0;
+  (void)self;
+  (void)context;
+}
+
+void EhPlatformDeInit(EhShell_t* self)
+{
+  (void)self;
 }
 
 char EhGetChar(EhShell_t* self)
 {
   (void)self;
-  return getchar();
+  return (char)getchar();
 }
 
 void EhPutChar(EhShell_t* self, char c)

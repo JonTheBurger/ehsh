@@ -1,90 +1,70 @@
+/* Copyright (c) 2024 Jonathan Povirk (jontheburger at gmail dot com)
+ * Distributed under the Boost Software License, Version 1.0. (See accompanying
+ * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ */
+////////////////////////////////////////////////////////////////////////////////
+// $Headers
+////////////////////////////////////////////////////////////////////////////////
+// local
+#include <ehsh/ehcmd.h>
 #include <ehsh/ehsh.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <string.h>
 
-#define RAWTERM 1
+////////////////////////////////////////////////////////////////////////////////
+// $Macros
+////////////////////////////////////////////////////////////////////////////////
+#ifndef EHSH_CFG_PLATFORM_SPECIFIC
+#define EHSH_CFG_PLATFORM_SPECIFIC 0
+#endif /* EHSH_CFG_PLATFORM_SPECIFIC */
 
-#if RAWTERM
+#if (EHSH_CFG_PLATFORM_SPECIFIC == 0)
+#include "ehsh/platform/eh.stdc.h"
+#elif defined(__linux__)
 #include "ehsh/platform/eh.linux.h"
+#elif defined(_MSC_VER)
+#include "ehsh/platform/eh.stdc.h"
+// #include "ehsh/platform/eh.win32.h"
 #else
 #include "ehsh/platform/eh.stdc.h"
 #endif
 
-void Echo(EhShell_t* shell)
-{
-  for (size_t i = 0; i < shell->ArgCount; ++i)
-  {
-    const char* arg = EhArgAt(shell, i);
-    EhPutStr(shell, arg);
-    EhPutNewline(shell);
-  }
-}
-
-void Help(EhShell_t* shell)
-{
-  const char* arg = EhArgAt(shell, 0);
-  if (arg == NULL)
-  {
-    arg = "";
-  }
-  size_t prefix = strnlen(arg, EHSH_CMDLINE_SIZE);
-
-  for (size_t i = 0; i < shell->CmdCount; ++i)
-  {
-    if (strncmp(arg, shell->Cmds[i].Name, prefix) == 0)
-    {
-      EhPutStr(shell, shell->Cmds[i].Name);
-      EhPutStr(shell, ": ");
-      EhPutStr(shell, shell->Cmds[i].Help);
-      EhPutNewline(shell);
-    }
-  }
-}
-
-void Quit(EhShell_t* shell)
-{
-  shell->Stop = true;
-}
-
+////////////////////////////////////////////////////////////////////////////////
+// $Functions
+////////////////////////////////////////////////////////////////////////////////
 int main(void)
 {
   const EhCommand_t cmds[] = {
     {
       "echo",
       "Prints arguments",
-      &Echo,
+      &EhEcho,
     },
     {
-      "ecco",
-      "Prints arguments",
-      &Echo,
+      "exit",
+      "Exits",
+      &EhExit,
     },
     {
       "help",
-      "Prints this",
-      &Help,
-    },
-    {
-      "quit",
-      "Exits",
-      &Quit,
+      "Prints commands",
+      &EhHelp,
     },
   };
   EhShell_t shell;
-  EhCreate(&shell);
-  EhInit(&shell, cmds, sizeof(cmds) / sizeof(*cmds));
-  shell.Cr  = true;
-  shell.Lf  = true;
-  shell.Eol = EHSH_EOL_LF;
-  shell.Tty = true;
-
+  EhInit(
+    &shell,
+    &(EhConfig_t){
+      .Commands     = cmds,
+      .CommandCount = sizeof(cmds) / sizeof(*cmds),
+      .Eol          = EHSH_EOL_LF,
+      .Tty          = true,
+      .Cr           = true,
+      .Lf           = true,
+    });
+  EhPlatformContext_t context;
+  EhPlatformInit(&shell, &context);
   EhExec(&shell);
+  EhPlatformDeInit(&shell);
+  EhDeInit(&shell);
 
-  EhDestroy(&shell);
-
-#if RAWTERM
-  tcsetattr(STDIN_FILENO, TCSANOW, &GTermIo);
-#endif
   return 0;
 }

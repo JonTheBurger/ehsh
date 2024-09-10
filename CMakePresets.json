@@ -91,12 +91,12 @@
           "name": "debug"
         },
         {
-          "type": "build",
-          "name": "debug-install"
-        },
-        {
           "type": "test",
           "name": "debug"
+        },
+        {
+          "type": "build",
+          "name": "debug-install"
         },
         {
           "type": "package",

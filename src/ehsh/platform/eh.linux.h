@@ -6,6 +6,7 @@
 // $Headers
 ////////////////////////////////////////////////////////////////////////////////
 // std
+#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -17,23 +18,24 @@
 #include <ehsh/ehsh.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-// $Globals
+// $Types
 ////////////////////////////////////////////////////////////////////////////////
-static struct termios GTermIo;
+typedef struct EhPlatformContext {
+  struct termios LastTermConfig; ///< Previous configuration of the terminal
+} EhPlatformContext_t;
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
-void EhInit(EhShell_t* self, const EhCommand_t* commands, uint8_t count)
+void EhPlatformInit(EhShell_t* self, void* context)
 {
-  self->Cmds     = commands;
-  self->CmdCount = count;
-  self->Cursor   = 0;
-
+  assert(context != NULL);
+  self->Context = context;
+  EhPlatformContext_t* ctx = (EhPlatformContext_t*)(self->Context);
   // https://man7.org/linux/man-pages/man3/termios.3.html
   // "stty -a"
-  tcgetattr(STDIN_FILENO, &GTermIo);
-  struct termios termiosv = GTermIo;
+  tcgetattr(STDIN_FILENO, &ctx->LastTermConfig);
+  struct termios termiosv = ctx->LastTermConfig;
   cfmakeraw(&termiosv);
   if (!self->Cr)
   {
@@ -44,8 +46,16 @@ void EhInit(EhShell_t* self, const EhCommand_t* commands, uint8_t count)
   tcsetattr(STDIN_FILENO, TCSANOW, &termiosv);
 }
 
+void EhPlatformDeInit(EhShell_t* self)
+{
+  assert(self->Context != NULL);
+  const EhPlatformContext_t* context = (EhPlatformContext_t*)(self->Context);
+  tcsetattr(STDIN_FILENO, TCSANOW, &context->LastTermConfig);
+}
+
 char EhGetChar(EhShell_t* self)
 {
+  (void)self;
   char c = 0;
   if (read(STDIN_FILENO, &c, 1) == 0)
   {
@@ -56,10 +66,12 @@ char EhGetChar(EhShell_t* self)
 
 void EhPutChar(EhShell_t* self, char c)
 {
+  (void)self;
   write(STDOUT_FILENO, &c, 1);
 }
 
 void EhPutStr(EhShell_t* self, const char* str)
 {
+  (void)self;
   write(STDOUT_FILENO, str, strnlen(str, 0xFF));
 }

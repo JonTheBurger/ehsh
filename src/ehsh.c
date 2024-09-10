@@ -17,6 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 #define EHSH_BACKSPACE "\x08"
 
+#if defined(__GNUC__) || defined(__clang__)
+#define EHSH_WEAK __attribute__((weak))
+#elif defined(__ICCARM__)
+#define EHSH_WEAK __weak
+#else
+#define EHSH_WEAK
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // $Types
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,7 +36,13 @@ typedef enum EhAscii {
 } EhAscii_t;
 
 ////////////////////////////////////////////////////////////////////////////////
-// $Functions
+// $Globals
+////////////////////////////////////////////////////////////////////////////////
+EHSH_WEAK char (*EhGetCharFn)(EhShell_t* self)         = NULL;
+EHSH_WEAK void (*EhPutCharFn)(EhShell_t* self, char c) = NULL;
+
+////////////////////////////////////////////////////////////////////////////////
+// $Prototypes
 ////////////////////////////////////////////////////////////////////////////////
 /** @brief Handles the currently loaded EhShell.CmdLine,
  * calling its handler with tokenized args.
@@ -45,7 +59,7 @@ static bool EhHandleCmdLine(EhShell_t* self);
 static void EhTokenize(EhShell_t* self);
 
 ////////////////////////////////////////////////////////////////////////////////
-// $Implementations
+// $Functions
 ////////////////////////////////////////////////////////////////////////////////
 static void EhOnNewline(EhShell_t* self)
 {
@@ -60,7 +74,10 @@ static void EhOnNewline(EhShell_t* self)
     EhPutChar(self, '"');
     EhPutNewline(self);
   }
-  EhPutStr(self, EHSH_PROPMT);
+  if (self->Tty)
+  {
+    EhPutStr(self, EHSH_PROMPT);
+  }
 
   // Reset
   memset(&self->CmdLine[0], 0, sizeof(self->CmdLine));
@@ -83,7 +100,7 @@ static void EhOnBackspace(EhShell_t* self)
 
 static void EhOnTab(EhShell_t* self)
 {
-  uint8_t matches = 0;
+  uint8_t matches   = 0;
   uint8_t lastMatch = 0;
 
   for (size_t i = 0; (i < self->CmdCount); ++i)
@@ -105,7 +122,7 @@ static void EhOnTab(EhShell_t* self)
       self->Cursor = strnlen(&self->CmdLine[0], EHSH_CMDLINE_SIZE);
     }
     EhPutNewline(self);
-    EhPutStr(self, EHSH_PROPMT);
+    EhPutStr(self, EHSH_PROMPT);
     EhPutStr(self, self->CmdLine);
   }
 }
@@ -133,18 +150,32 @@ static void EhOnChar(EhShell_t* self, char c)
   ++self->Cursor;
 }
 
-EhShell_t* EhCreate(EhShell_t* self)
+EhShell_t* EhInit(EhShell_t* self, const EhConfig_t* config)
 {
-  if (self != NULL)
+  if ((self != NULL) && (config != NULL))
   {
     memset(self, 0, sizeof(*self));
+    self->Cmds     = config->Commands;
+    self->CmdCount = config->CommandCount;
+    self->Eol      = config->Eol;
+    self->Tty      = config->Tty;
+    self->Cr       = config->Cr;
+    self->Lf       = config->Lf;
   }
   return self;
 }
 
+void EhDeInit(EhShell_t* self)
+{
+  (void)self;
+}
+
 void EhExec(EhShell_t* self)
 {
-  EhPutStr(self, EHSH_PROPMT);
+  if (self->Tty)
+  {
+    EhPutStr(self, EHSH_PROMPT);
+  }
 
   do
   {
@@ -179,13 +210,6 @@ void EhExec(EhShell_t* self)
         EhOnTab(self);
       }
     }
-    else if (c == '-')
-    {
-      if (self->Tty)
-      {
-        EhOnTab(self);
-      }
-    }
     else
     {
       EhOnChar(self, c);
@@ -203,11 +227,6 @@ void EhPutNewline(EhShell_t* self)
   {
     EhPutChar(self, '\n');
   }
-}
-
-void EhDestroy(EhShell_t* self)
-{
-  (void)self;
 }
 
 static bool EhHandleCmdLine(EhShell_t* self)
@@ -245,5 +264,33 @@ static void EhTokenize(EhShell_t* self)
       ++self->ArgCount;
       ++delim;
     }
+  }
+}
+
+EHSH_WEAK char EhGetChar(EhShell_t* self)
+{
+  char c = EHSH_ASCII_EOT;
+
+  if (EhGetCharFn != NULL)
+  {
+    c = EhGetCharFn(self);
+  }
+
+  return c;
+}
+
+EHSH_WEAK void EhPutChar(EhShell_t* self, char c)
+{
+  if (EhPutCharFn != NULL)
+  {
+    EhPutCharFn(self, c);
+  }
+}
+
+EHSH_WEAK void EhPutStr(EhShell_t* self, const char* str)
+{
+  for (size_t i = 0; str[i] != '\0'; ++i)
+  {
+    EhPutChar(self, str[i]);
   }
 }

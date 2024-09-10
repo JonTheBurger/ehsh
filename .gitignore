@@ -1,5 +1,6 @@
 .cache/
 .devbox/
+CMakeLists.txt.user
 build/
-out/
 compile_commands.json
+out/

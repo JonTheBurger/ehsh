@@ -75,12 +75,11 @@ install(
 ################################################################################
 if (EHSH_BUILD_TESTS)
   enable_testing()
+
   add_executable(unit test/unit.c)
-  target_link_libraries(unit
-    PRIVATE
-      ehsh::ehsh
-  )
+  target_link_libraries(unit PRIVATE ehsh::ehsh)
   add_test(NAME unit COMMAND unit)
+  set_tests_properties(unit PROPERTIES TIMEOUT 5)
 endif()
 
 ################################################################################
@@ -103,7 +102,7 @@ if (PROJECT_IS_TOP_LEVEL)
   file(GLOB_RECURSE EHSH_SOURCES  CONFIGURE_DEPENDS src/*.c)
   file(GLOB_RECURSE EHSH_HEADERS  CONFIGURE_DEPENDS src/*.h)
   file(GLOB_RECURSE EHSH_EXAMPLES CONFIGURE_DEPENDS example/*.c)
-  file(GLOB_RECURSE EHSH_TESTS    CONFIGURE_DEPENDS test/*.c)
+  file(GLOB_RECURSE EHSH_TESTS    CONFIGURE_DEPENDS test/*.cpp)
 
   # Actions
   find_program(CppCheck_EXECUTABLE cppcheck)

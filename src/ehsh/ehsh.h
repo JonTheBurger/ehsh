@@ -11,13 +11,17 @@
 #include <stdint.h>  // uint8_t
 #include <stdlib.h>  // size_t
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // $Macros
 ////////////////////////////////////////////////////////////////////////////////
 #define EHSH_HISTORY_SIZE 10
 #define EHSH_CMDLINE_SIZE 16
 #define EHSH_MAX_ARGS 4  // Up to 15
-#define EHSH_PROPMT "> "
+#define EHSH_PROMPT "> "
 
 #define EHSH_EMSG_NOCMD "No such command"
 #define EHSH_EMSG_SYNTAX "Syntax error"
@@ -28,7 +32,7 @@
 #define EHSH_EOL_LF 0
 #define EHSH_EOL_CR 1
 
-#define ESHS_TERMIOS 1
+#define EHSH_TERMIOS 1
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Types
@@ -47,7 +51,24 @@ struct EhCommand {
   EhCallback_t Callback;
 };
 
-/// State & Configuration associated with the current shell
+typedef struct EhConfig {
+  const EhCommand_t* Commands;
+  uint8_t CommandCount;
+  /// When to process commands for input line endings.
+  /// Set to 0 to execute commands on LF (for CR+LF and LF-only line endings)
+  /// Set to 1 to execute commands on CR only (for CR-only line endings)
+  uint8_t Eol : 1;
+  /// Act as a teletype terminal (echo chars as they are typed)
+  uint8_t Tty : 1;
+  /// Print carriage return upon new line
+  uint8_t Cr : 1;
+  /// Print line feed upon new line
+  uint8_t Lf : 1;
+} EhConfig_t;
+
+/** State & Configuration associated with the current shell. To initialize,
+ * memset to 0 and set Eol, Tty, Cr, and Lf.
+ */
 struct EhShell {
   /// User context associated with this shell
   void* Context;
@@ -69,45 +90,41 @@ struct EhShell {
   /// Number of parsed argument tokens
   uint8_t ArgCount : 4;
 
-  /// When to process commands for input line endings.
-  /// Set to 0 to execute commands on LF (for CR+LF and LF-only line endings)
-  /// Set to 1 to execute commands on CR only (for CR-only line endings)
+  /// @copydoc EhConfig.Eol
   uint8_t Eol : 1;
-  /// Act as a teletype terminal (echo chars as they are typed)
+  /// @copydoc EhConfig.Tty
   uint8_t Tty : 1;
-  /// Print carriage return upon new line
+  /// @copydoc EhConfig.Cr
   uint8_t Cr : 1;
-  /// Print line feed upon new line
+  /// @copydoc EhConfig.Lr
   uint8_t Lf : 1;
 
   /// Set to 1 to stop running
   uint8_t Stop : 1;
-  /// Set to 1 if this shell was heap allocated; always 0
-  uint8_t Heap : 1;
-  ///
-  uint8_t State : 3;
   /// Reserved for future versions of ehsh - if you're feeling feisty, use it until it is claimed in the future!
-  uint8_t Reserved : 3;
+  uint8_t Reserved : 7;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// $Functions
+// $Globals
 ////////////////////////////////////////////////////////////////////////////////
-/** @brief Creates an uninitialized shell.
- *
- * @param self Statically allocated shell.
- * @return Initialized shell, or `NULL` if you passed in `NULL` for some reason.
- */
-EhShell_t* EhCreate(EhShell_t* self);
+extern char (*EhGetCharFn)(EhShell_t* self);
+extern void (*EhPutCharFn)(EhShell_t* self, char c);
 
-// TODO: This should be a user function
+////////////////////////////////////////////////////////////////////////////////
+// $Prototypes
+////////////////////////////////////////////////////////////////////////////////
 /** @brief Sets up a shell so it's ready for use.
  *
- * @param self The shell to set up; should have been created via EhCreate.
+ * @param self Statically allocated shell.
  * @param commands Array of commands that this shell will delegate to; must outlive `self`.
  * @param count The number of commands this shell will handle.
+ * @return Initialized shell, or `NULL` if you passed in `NULL` for some reason.
  */
-void EhInit(EhShell_t* self, const EhCommand_t* commands, uint8_t count);
+EhShell_t* EhInit(EhShell_t* self, const EhConfig_t* config);
+
+/** @brief Destroys a previously created shell. */
+void EhDeInit(EhShell_t* self);
 
 /** @brief Runs the shell in a loop until EhShell.Stop is set to `true`.
  * The shell will always run for at least one iteration (do while).
@@ -121,9 +138,6 @@ void EhExec(EhShell_t* self);
  * @param self Shell to print to.
  */
 void EhPutNewline(EhShell_t* self);
-
-/** @brief Destroys a previously created shell. */
-void EhDestroy(EhShell_t* self);
 
 /** @brief User-defined function for a blocking character read.
  * See platform/ folder, for example eh.stdc.h.
@@ -150,7 +164,7 @@ void EhPutChar(EhShell_t* self, char c);
 void EhPutStr(EhShell_t* self, const char* str);
 
 ////////////////////////////////////////////////////////////////////////////////
-// $Implementations
+// $Functions
 ////////////////////////////////////////////////////////////////////////////////
 /** @brief Gets the nth argument as a string.
  *
@@ -167,5 +181,9 @@ static inline const char* EhArgAt(EhShell_t* self, uint8_t index)
   }
   return arg;
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif /* EHSH_H */

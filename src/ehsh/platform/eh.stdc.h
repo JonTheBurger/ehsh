@@ -2,6 +2,8 @@
  * Distributed under the Boost Software License, Version 1.0. (See accompanying
  * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  */
+#ifndef EHSH_STDC_H
+#define EHSH_STDC_H
 ////////////////////////////////////////////////////////////////////////////////
 // $Headers
 ////////////////////////////////////////////////////////////////////////////////
@@ -13,24 +15,16 @@
 #include <ehsh/ehsh.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-// $Types
-////////////////////////////////////////////////////////////////////////////////
-typedef struct EhPlatformContext {
-  char Placeholder;
-} EhPlatformContext_t;
-
-////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
-void EhPlatformInit(EhShell_t* self, void* context)
+void EhPlatformInit(EhPlatform_t** platform)
 {
-  (void)self;
-  (void)context;
+  (void)platform;
 }
 
-void EhPlatformDeInit(EhShell_t* self)
+void EhPlatformDeInit(EhPlatform_t** platform)
 {
-  (void)self;
+  (void)platform;
 }
 
 char EhGetChar(EhShell_t* self)
@@ -50,3 +44,5 @@ void EhPutStr(EhShell_t* self, const char* str)
   (void)self;
   printf("%s", str);
 }
+
+#endif /* EHSH_STDC_H */

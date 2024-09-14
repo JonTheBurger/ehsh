@@ -12,34 +12,15 @@
 // local
 #include <ehsh/ehsh.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// $Macros
-////////////////////////////////////////////////////////////////////////////////
-#define EHSH_BACKSPACE "\x08"
-
-#if defined(__GNUC__) || defined(__clang__)
-#define EHSH_WEAK __attribute__((weak))
-#elif defined(__ICCARM__)
-#define EHSH_WEAK __weak
-#else
-#define EHSH_WEAK
+#if EHSH_CFG_PLATFORM_FPTR
+#include <ehsh/platform/eh.fptr.h>
+#elif EHSH_CFG_PLATFORM_STDC
+#include <ehsh/platform/eh.stdc.h>
+#elif EHSH_CFG_PLATFORM_LINUX
+#include <ehsh/platform/eh.linux.h>
+#elif EHSH_CFG_PLATFORM_WIN32
+#include <ehsh/platform/eh.win32.h>
 #endif
-
-////////////////////////////////////////////////////////////////////////////////
-// $Types
-////////////////////////////////////////////////////////////////////////////////
-/// ASCII control characters
-typedef enum EhAscii {
-  EHSH_ASCII_EOT = 4,    ///< End of transmission
-  EHSH_ASCII_BS  = 8,    ///< Backspace
-  EHSH_ASCII_DEL = 127,  ///< Delete
-} EhAscii_t;
-
-////////////////////////////////////////////////////////////////////////////////
-// $Globals
-////////////////////////////////////////////////////////////////////////////////
-EHSH_WEAK char (*EhGetCharFn)(EhShell_t* self)         = NULL;
-EHSH_WEAK void (*EhPutCharFn)(EhShell_t* self, char c) = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Prototypes
@@ -199,7 +180,7 @@ void EhExec(EhShell_t* self)
     {
       self->Stop = 1;
     }
-    else if (c == EHSH_ASCII_DEL)
+    else if ((c == EHSH_ASCII_DEL) || (c == EHSH_ASCII_BS))
     {
       EhOnBackspace(self);
     }
@@ -264,33 +245,5 @@ static void EhTokenize(EhShell_t* self)
       ++self->ArgCount;
       ++delim;
     }
-  }
-}
-
-EHSH_WEAK char EhGetChar(EhShell_t* self)
-{
-  char c = EHSH_ASCII_EOT;
-
-  if (EhGetCharFn != NULL)
-  {
-    c = EhGetCharFn(self);
-  }
-
-  return c;
-}
-
-EHSH_WEAK void EhPutChar(EhShell_t* self, char c)
-{
-  if (EhPutCharFn != NULL)
-  {
-    EhPutCharFn(self, c);
-  }
-}
-
-EHSH_WEAK void EhPutStr(EhShell_t* self, const char* str)
-{
-  for (size_t i = 0; str[i] != '\0'; ++i)
-  {
-    EhPutChar(self, str[i]);
   }
 }

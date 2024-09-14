@@ -34,11 +34,33 @@
       }
     },
     {
+      "name": "msvc",
+      "displayName": "MSVC x64",
+      "description": "Microsoft Visual C++ for x64",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
       "name": "cov",
       "displayName": "Coverage",
       "description": "Debug build with Code Coverage enabled",
-      "generator": "Ninja"
-    }
+      "generator": "Ninja",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Linux" ]
+        },
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
+    },
   ],
   "buildPresets": [
     {

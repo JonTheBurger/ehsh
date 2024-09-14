@@ -1,5 +1,6 @@
 .cache/
 .devbox/
+.vs/
 CMakeLists.txt.user
 build/
 compile_commands.json

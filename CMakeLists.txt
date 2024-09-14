@@ -91,6 +91,7 @@ if (EHSH_BUILD_EXAMPLES)
     PRIVATE
       ehsh::ehsh
   )
+  set_directory_properties(PROPERTIES VS_STARTUP_PROJECT main)
 endif()
 
 ################################################################################
@@ -141,4 +142,15 @@ if (PROJECT_IS_TOP_LEVEL)
   add_dependencies(lint cppcheck clang-tidy)
   add_custom_target(format)
   add_dependencies(format clang-format)
+
+  # IDE Layout
+  set_target_properties(
+    cppcheck
+    clang-tidy
+    clang-format
+    lint
+    format
+    PROPERTIES
+      FOLDER tools
+  )
 endif()

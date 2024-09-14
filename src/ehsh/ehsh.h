@@ -11,6 +11,9 @@
 #include <stdint.h>  // uint8_t
 #include <stdlib.h>  // size_t
 
+// local
+#include <ehsh/ehsh.cfg.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,9 +37,18 @@ extern "C" {
 
 #define EHSH_TERMIOS 1
 
+#define EHSH_BACKSPACE "\x08"
+
 ////////////////////////////////////////////////////////////////////////////////
 // $Types
 ////////////////////////////////////////////////////////////////////////////////
+/// ASCII control characters
+typedef enum EhAscii {
+  EHSH_ASCII_EOT = 4,    ///< End of transmission
+  EHSH_ASCII_BS  = 8,    ///< Backspace
+  EHSH_ASCII_DEL = 127,  ///< Delete
+} EhAscii_t;
+
 typedef struct EhShell   EhShell_t;
 typedef struct EhCommand EhCommand_t;
 typedef void (*EhCallback_t)(EhShell_t* shell);
@@ -105,15 +117,21 @@ struct EhShell {
   uint8_t Reserved : 7;
 };
 
+typedef struct EhPlatform EhPlatform_t;
+
 ////////////////////////////////////////////////////////////////////////////////
 // $Globals
 ////////////////////////////////////////////////////////////////////////////////
 extern char (*EhGetCharFn)(EhShell_t* self);
 extern void (*EhPutCharFn)(EhShell_t* self, char c);
+extern void (*EhPutStrFn)(EhShell_t* self, const char* str);
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Prototypes
 ////////////////////////////////////////////////////////////////////////////////
+void EhPlatformInit(EhPlatform_t** platform);
+void EhPlatformDeInit(EhPlatform_t** platform);
+
 /** @brief Sets up a shell so it's ready for use.
  *
  * @param self Statically allocated shell.

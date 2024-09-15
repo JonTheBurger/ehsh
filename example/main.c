@@ -1,6 +1,5 @@
-/* Copyright (c) 2024 Jonathan Povirk (jontheburger at gmail dot com)
- * Distributed under the Boost Software License, Version 1.0. (See accompanying
- * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+/** @file
+ * SPDX-License-Identifier: BSL-1.0
  */
 ////////////////////////////////////////////////////////////////////////////////
 // $Headers
@@ -15,15 +14,17 @@
 #if WIN32
 #define MAIN_EOL EHSH_EOL_CR
 #else
-#define MAIN_EOL EHSH_EOL_LR
+#define MAIN_EOL EHSH_EOL_LF
 #endif
+
+#include <ehsh/platform/eh.linux.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
 int main(void)
 {
-  EhPlatform_t* platform;
+  EhPlatform_t* platform = NULL;
   EhPlatformInit(&platform);
 
   const EhCommand_t cmds[] = {

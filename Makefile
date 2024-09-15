@@ -46,7 +46,10 @@ format: ## Reformats code
 lint: ## Runs static analysis tools
 	cmake --workflow --preset=lint
 
-install: ## Installs the library 
+docs: ## Installs the library
+	cmake --workflow --preset=docs
+
+install: ## Installs the library
 	cmake --workflow --preset=install
 
 update: ## Updates dependent files after updating set(PROJECT_VERSION ...)

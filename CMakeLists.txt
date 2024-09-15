@@ -41,7 +41,11 @@ target_sources(ehsh
       src
     FILES
       src/ehsh/ehsh.h
+      src/ehsh/ehsh.cfg.h
+      src/ehsh/extra/ehcmd.h
+      src/ehsh/platform/eh.fptr.h
       src/ehsh/platform/eh.linux.h
+      src/ehsh/platform/eh.platform.h
       src/ehsh/platform/eh.stdc.h
       src/ehsh/platform/eh.win32.h
 )
@@ -87,10 +91,7 @@ endif()
 ################################################################################
 if (EHSH_BUILD_EXAMPLES)
   add_executable(main example/main.c)
-  target_link_libraries(main
-    PRIVATE
-      ehsh::ehsh
-  )
+  target_link_libraries(main PRIVATE ehsh::ehsh)
   set_directory_properties(PROPERTIES VS_STARTUP_PROJECT main)
 endif()
 
@@ -99,58 +100,5 @@ endif()
 ################################################################################
 include(CPack)
 if (PROJECT_IS_TOP_LEVEL)
-  # Variables
-  file(GLOB_RECURSE EHSH_SOURCES  CONFIGURE_DEPENDS src/*.c)
-  file(GLOB_RECURSE EHSH_HEADERS  CONFIGURE_DEPENDS src/*.h)
-  file(GLOB_RECURSE EHSH_EXAMPLES CONFIGURE_DEPENDS example/*.c)
-  file(GLOB_RECURSE EHSH_TESTS    CONFIGURE_DEPENDS test/*.cpp)
-
-  # Actions
-  find_program(CppCheck_EXECUTABLE cppcheck)
-  add_custom_target(cppcheck
-    COMMAND
-      ${CppCheck_EXECUTABLE}
-      --project=${PROJECT_BINARY_DIR}/compile_commands.json
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    VERBATIM
-  )
-
-  find_program(ClangTidy_EXECUTABLE clang-tidy)
-  add_custom_target(clang-tidy
-    COMMAND
-      ${ClangTidy_EXECUTABLE}
-      --fix
-      --format-style=file
-      -p ${PROJECT_BINARY_DIR}
-      ${EHSH_SOURCES} ${EHSH_HEADERS} ${EHSH_EXAMPLES} ${EHSH_TESTS}
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    VERBATIM
-  )
-
-  find_program(ClangFormat_EXECUTABLE clang-format)
-  add_custom_target(clang-format
-    COMMAND
-      ${ClangFormat_EXECUTABLE}
-      -i # inplace edit <file>s
-      ${EHSH_SOURCES} ${EHSH_HEADERS} ${EHSH_EXAMPLES} ${EHSH_TESTS}
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    VERBATIM
-  )
-
-  # Convenience Targets
-  add_custom_target(lint)
-  add_dependencies(lint cppcheck clang-tidy)
-  add_custom_target(format)
-  add_dependencies(format clang-format)
-
-  # IDE Layout
-  set_target_properties(
-    cppcheck
-    clang-tidy
-    clang-format
-    lint
-    format
-    PROPERTIES
-      FOLDER tools
-  )
+  add_subdirectory(tools)
 endif()

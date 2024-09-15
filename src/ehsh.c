@@ -1,6 +1,5 @@
-/* Copyright (c) 2024 Jonathan Povirk (jontheburger at gmail dot com)
- * Distributed under the Boost Software License, Version 1.0. (See accompanying
- * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+/** @file
+ * SPDX-License-Identifier: BSL-1.0
  */
 ////////////////////////////////////////////////////////////////////////////////
 // $Headers
@@ -11,16 +10,7 @@
 
 // local
 #include <ehsh/ehsh.h>
-
-#if EHSH_CFG_PLATFORM_FPTR
-#include <ehsh/platform/eh.fptr.h>
-#elif EHSH_CFG_PLATFORM_STDC
-#include <ehsh/platform/eh.stdc.h>
-#elif EHSH_CFG_PLATFORM_LINUX
-#include <ehsh/platform/eh.linux.h>
-#elif EHSH_CFG_PLATFORM_WIN32
-#include <ehsh/platform/eh.win32.h>
-#endif
+#include <ehsh/platform/eh.platform.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Prototypes
@@ -108,7 +98,7 @@ static void EhOnTab(EhShell_t* self)
   }
 }
 
-static void EhOnChar(EhShell_t* self, char c)
+static void EhOnChar(EhShell_t* self, char chr)
 {
   // If the cursor is at the end of the buffer
   if (self->Cursor >= EHSH_CMDLINE_SIZE)
@@ -122,10 +112,10 @@ static void EhOnChar(EhShell_t* self, char c)
     }
   }
 
-  self->CmdLine[self->Cursor] = c;
+  self->CmdLine[self->Cursor] = chr;
   if (self->Tty)
   {
-    EhPutChar(self, c);
+    EhPutChar(self, chr);
   }
 
   ++self->Cursor;
@@ -160,31 +150,31 @@ void EhExec(EhShell_t* self)
 
   do
   {
-    char c = EhGetChar(self);
+    char chr = EhGetChar(self);
 
-    if (c == '\n')
+    if (chr == '\n')
     {
       if (self->Eol == EHSH_EOL_LF)
       {
         EhOnNewline(self);
       }
     }
-    else if (c == '\r')
+    else if (chr == '\r')
     {
       if (self->Eol == EHSH_EOL_CR)
       {
         EhOnNewline(self);
       }
     }
-    else if ((c < 0) || (c == EHSH_ASCII_EOT))
+    else if ((chr < 0) || (chr == EHSH_ASCII_EOT))
     {
       self->Stop = 1;
     }
-    else if ((c == EHSH_ASCII_DEL) || (c == EHSH_ASCII_BS))
+    else if ((chr == EHSH_ASCII_DEL) || (chr == EHSH_ASCII_BS))
     {
       EhOnBackspace(self);
     }
-    else if (c == '\t')
+    else if (chr == '\t')
     {
       if (self->Tty)
       {
@@ -193,7 +183,7 @@ void EhExec(EhShell_t* self)
     }
     else
     {
-      EhOnChar(self, c);
+      EhOnChar(self, chr);
     }
   } while (!self->Stop);
 }

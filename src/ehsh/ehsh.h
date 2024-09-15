@@ -1,6 +1,7 @@
-/* Copyright (c) 2024 Jonathan Povirk (jontheburger at gmail dot com)
- * Distributed under the Boost Software License, Version 1.0. (See accompanying
- * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+/** @file
+ * SPDX-License-Identifier: BSL-1.0
+ * @addtogroup ehsh
+ * @{
  */
 #ifndef EHSH_H
 #define EHSH_H
@@ -64,7 +65,9 @@ struct EhCommand {
 };
 
 typedef struct EhConfig {
+  /// Array of commands handled by this shell. @note Commands must outlive the shell.
   const EhCommand_t* Commands;
+  /// Number of Commands handled by this shell
   uint8_t CommandCount;
   /// When to process commands for input line endings.
   /// Set to 0 to execute commands on LF (for CR+LF and LF-only line endings)
@@ -108,7 +111,7 @@ struct EhShell {
   uint8_t Tty : 1;
   /// @copydoc EhConfig.Cr
   uint8_t Cr : 1;
-  /// @copydoc EhConfig.Lr
+  /// @copydoc EhConfig.Lf
   uint8_t Lf : 1;
 
   /// Set to 1 to stop running
@@ -135,8 +138,7 @@ void EhPlatformDeInit(EhPlatform_t** platform);
 /** @brief Sets up a shell so it's ready for use.
  *
  * @param self Statically allocated shell.
- * @param commands Array of commands that this shell will delegate to; must outlive `self`.
- * @param count The number of commands this shell will handle.
+ * @param config Settings to copy into the shell.
  * @return Initialized shell, or `NULL` if you passed in `NULL` for some reason.
  */
 EhShell_t* EhInit(EhShell_t* self, const EhConfig_t* config);
@@ -203,5 +205,5 @@ static inline const char* EhArgAt(EhShell_t* self, uint8_t index)
 #ifdef __cplusplus
 } // extern "C"
 #endif
-
+/** @} */
 #endif /* EHSH_H */

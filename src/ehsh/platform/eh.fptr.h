@@ -1,6 +1,5 @@
-/* Copyright (c) 2024 Jonathan Povirk (jontheburger at gmail dot com)
- * Distributed under the Boost Software License, Version 1.0. (See accompanying
- * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+/** @file
+ * SPDX-License-Identifier: BSL-1.0
  */
 ////////////////////////////////////////////////////////////////////////////////
 // $Headers
@@ -26,9 +25,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Globals
 ////////////////////////////////////////////////////////////////////////////////
-EHSH_WEAK char (*EhGetCharFn)(EhShell_t* self)               = NULL;
-EHSH_WEAK void (*EhPutCharFn)(EhShell_t* self, char c)       = NULL;
-EHSH_WEAK void (*EhPutStrFn)(EhShell_t* self, const char* c) = NULL;
+EHSH_WEAK char (*EhGetCharFn)(EhShell_t* self)                 = NULL;
+EHSH_WEAK void (*EhPutCharFn)(EhShell_t* self, char chr)       = NULL;
+EHSH_WEAK void (*EhPutStrFn)(EhShell_t* self, const char* chr) = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
@@ -45,21 +44,21 @@ void EhPlatformDeInit(EhPlatform_t** platform)
 
 EHSH_WEAK char EhGetChar(EhShell_t* self)
 {
-  char c = EHSH_ASCII_EOT;
+  char chr = EHSH_ASCII_EOT;
 
   if (EhGetCharFn != NULL)
   {
-    c = EhGetCharFn(self);
+    chr = EhGetCharFn(self);
   }
 
-  return c;
+  return chr;
 }
 
-EHSH_WEAK void EhPutChar(EhShell_t* self, char c)
+EHSH_WEAK void EhPutChar(EhShell_t* self, char chr)
 {
   if (EhPutCharFn != NULL)
   {
-    EhPutCharFn(self, c);
+    EhPutCharFn(self, chr);
   }
 }
 

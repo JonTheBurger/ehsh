@@ -12,7 +12,7 @@ Be amazed by state-of-the-art (for embedded) features, such as:
 - No heap allocation or global memory (multiple terminals)!
 - Select input EOL (CR or LF) and output EOL (CR, LF, CR+LF) at runtime!
 - Select tty mode (echo typed characters or not) at runtime!
-- Tab completion (Coming soon?)!
+- Tab completion!
 - Context pointers!
 - Only requires C99!
     - `memset`
@@ -74,3 +74,15 @@ Simply run `devbox shell`, followed by one of the convenience `make` targets.
 - Packages / Update
     - Vcpkg: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-packaging
     - deb?
+
+@dir src
+@brief src
+
+@dir src/ehsh
+@brief src/ehsh
+
+@dir src/ehsh/extra
+@brief src/ehsh/extra
+
+@dir src/ehsh/platform
+@brief src/ehsh/platform

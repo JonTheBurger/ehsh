@@ -5,9 +5,14 @@
     "clang@18.1.8",
     "cmake@3.29.6",
     "cppcheck@2.15.0",
+    "doxygen@1.10.0",
     "gcc@14.2.0",
     "gcovr@7.2",
-    "ninja@1.12.1"
+    "git@2.46.0",
+    "git-lfs@3.5.1",
+    "ninja@1.12.1",
+    "python@3.12.5",
+    "vcpkg@2024.08.23"
   ],
   "shell": {
     "init_hook": [

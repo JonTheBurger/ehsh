@@ -1,6 +1,5 @@
-/* Copyright (c) 2024 Jonathan Povirk (jontheburger at gmail dot com)
- * Distributed under the Boost Software License, Version 1.0. (See accompanying
- * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+/** @file
+ * SPDX-License-Identifier: BSL-1.0
  */
 #ifndef EHSH_LINUX_H
 #define EHSH_LINUX_H
@@ -40,12 +39,7 @@ void EhPlatformInit(EhPlatform_t** platform)
   tcgetattr(STDIN_FILENO, &(*platform)->LastTermConfig);
   struct termios termiosv = (*platform)->LastTermConfig;
   cfmakeraw(&termiosv);
-  if (!self->Cr)
-  {
-    // This should almost certainly be true, but this prevents false from breaking everything
-    termiosv.c_iflag |= ICRNL;
-    // termiosv.c_iflag |= INLCR;
-  }
+  termiosv.c_iflag |= (ICRNL | INLCR);
   tcsetattr(STDIN_FILENO, TCSANOW, &termiosv);
 }
 

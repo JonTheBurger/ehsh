@@ -60,7 +60,7 @@
           "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
         }
       }
-    },
+    }
   ],
   "buildPresets": [
     {
@@ -78,8 +78,18 @@
       "targets": ["lint"]
     },
     {
+      "name": "docs",
+      "configurePreset": "debug",
+      "targets": ["docs"]
+    },
+    {
       "name": "debug-install",
       "configurePreset": "debug",
+      "targets": ["install"]
+    },
+    {
+      "name": "install",
+      "configurePreset": "release",
       "targets": ["install"]
     }
   ],
@@ -166,6 +176,19 @@
         {
           "type": "build",
           "name": "lint"
+        }
+      ]
+    },
+    {
+      "name": "docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "debug"
+        },
+        {
+          "type": "build",
+          "name": "docs"
         }
       ]
     }

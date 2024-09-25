@@ -34,6 +34,24 @@
       }
     },
     {
+      "name": "cov",
+      "inherits": "default",
+      "displayName": "Coverage",
+      "description": "Debug build with Code Coverage enabled",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_FLAGS": "--coverage"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Linux" ]
+        },
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
+    },
+    {
       "name": "msvc",
       "displayName": "MSVC x64",
       "description": "Microsoft Visual C++ for x64",
@@ -46,26 +64,25 @@
           "hostOS": [ "Windows" ]
         }
       }
-    },
-    {
-      "name": "cov",
-      "displayName": "Coverage",
-      "description": "Debug build with Code Coverage enabled",
-      "generator": "Ninja",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Linux" ]
-        },
-        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
-        }
-      }
     }
   ],
   "buildPresets": [
     {
       "name": "debug",
       "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "cov",
+      "configurePreset": "cov"
+    },
+    {
+      "name": "cov.html",
+      "configurePreset": "cov",
+      "targets": ["cov.html"]
     },
     {
       "name": "format",
@@ -97,6 +114,12 @@
     {
       "name": "debug",
       "configurePreset": "debug",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+    },
+    {
+      "name": "cov",
+      "configurePreset": "cov",
       "output": { "outputOnFailure": true },
       "execution": { "noTestsAction": "error", "stopOnFailure": true }
     }
@@ -189,6 +212,27 @@
         {
           "type": "build",
           "name": "docs"
+        }
+      ]
+    },
+    {
+      "name": "cov",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "cov"
+        },
+        {
+          "type": "build",
+          "name": "cov"
+        },
+        {
+          "type": "test",
+          "name": "cov"
+        },
+        {
+          "type": "build",
+          "name": "cov.html"
         }
       ]
     }

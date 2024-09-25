@@ -101,7 +101,28 @@ if (EHSH_BUILD_TESTS)
   target_link_libraries(unit PRIVATE ehsh::ehsh)
   add_test(NAME unit COMMAND unit)
   set_tests_properties(unit PROPERTIES TIMEOUT 5)
+
+  # TODO(Jon): Find GCov + GCovr, create venv, check with sanitizers
+  add_custom_target(
+    cov.html
+    COMMAND
+    cmake -E make_directory "${PROJECT_BINARY_DIR}/cov"
+    COMMAND
+      gcovr
+      --root   "${PROJECT_SOURCE_DIR}"
+      --filter "${PROJECT_SOURCE_DIR}/src"
+      --decisions
+      --calls
+      --exclude-unreachable-branches
+      --txt-summary
+      --html-details "${PROJECT_BINARY_DIR}/cov/cov.html"
+      --html-theme github.dark-blue
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+    VERBATIM
+  )
 endif()
+find_program(GCOVR_EXECUTABLE gcovr)
+message(WARNING "GCOVR_EXECUTABLE ${GCOVR_EXECUTABLE}")
 
 ################################################################################
 # Examples

@@ -45,73 +45,94 @@ add_custom_target(clang-format
 
 # Docs
 find_package(Doxygen)
-set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/docs")
-set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
-set(DOXYGEN_GENERATE_XML YES)
-set(DOXYGEN_GENERATE_HTML YES)
-set(DOXYGEN_HTML_OUTPUT htm)
-set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
-set(DOXYGEN_EXAMPLE_PATH
-  "example"
-  "test"
-)
-set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "README.md")
-set(DOXYGEN_IMAGE_PATH "docs")
-set(DOXYGEN_EXCLUDE "/tools/")
-set(DOXYGEN_FILTER_SOURCE_FILES YES)
-set(DOXYGEN_INPUT_FILTER [[sed -e \"s#SPDX-License-Identifier: \([^[:space:] ]\+\)#@copyright <a href=\\\"https://spdx.org/licenses/\\1.html\\\">\\1</a>#g\"]])
-set(DOXYGEN_CALL_GRAPH YES)
-set(DOXYGEN_CALLER_GRAPH YES)
-set(DOXYGEN_DOT_IMAGE_FORMAT svg)
-set(DOXYGEN_INTERACTIVE_SVG YES)
-set(DOXYGEN_XML_PROGRAMLISTING NO)
-doxygen_add_docs(
-  doxygen
-  "${PROJECT_SOURCE_DIR}"
-  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-)
-include(ExternalProject)
-ExternalProject_Add(
-  mcss
-  PREFIX            "${PROJECT_BINARY_DIR}/src/mcss"
-  GIT_REPOSITORY    https://github.com/mosra/m.css.git
-  GIT_TAG           df894269c25f368405742bc16fcb4bc3ca56384d
-  GIT_SHALLOW       ON
-  GIT_PROGRESS      ON
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND     ""
-  INSTALL_COMMAND   ""
-)
-ExternalProject_Get_property(mcss SOURCE_DIR)
-set(MCSS_DIR ${SOURCE_DIR})
-set(Python3_ROOT_DIR "${PROJECT_SOURCE_DIR}/.venv/Scripts")
-set(Python3_FIND_VIRTUALENV FIRST)
-set(VENV_BIN_DIR bin)
-if (WIN32)
-  set(VENV_BIN_DIR Scripts)
+find_program(Sed_EXECUTABLE sed)
+if (Doxygen_FOUND AND Sed_EXECUTABLE)
+  set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/docs")
+  set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
+  set(DOXYGEN_GENERATE_XML YES)
+  set(DOXYGEN_GENERATE_HTML YES)
+  set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
+  set(DOXYGEN_EXAMPLE_PATH
+    "example"
+    "test"
+  )
+  set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "README.md")
+  set(DOXYGEN_IMAGE_PATH "docs")
+  set(DOXYGEN_EXCLUDE_PATTERNS
+    */tools/*
+    */mcss/*
+  )
+  set(DOXYGEN_FILTER_SOURCE_FILES YES)
+  set(DOXYGEN_INPUT_FILTER [[-e \"s#SPDX-License-Identifier: \([^[:space:] ]\+\)#@copyright <a href=\\\"https://spdx.org/licenses/\\1.html\\\">\\1</a>#g\"]])
+  set(DOXYGEN_INPUT_FILTER "${Sed_EXECUTABLE} ${DOXYGEN_INPUT_FILTER}")
+  set(DOXYGEN_CALL_GRAPH YES)
+  set(DOXYGEN_CALLER_GRAPH YES)
+  set(DOXYGEN_DOT_IMAGE_FORMAT svg)
+  set(DOXYGEN_INTERACTIVE_SVG YES)
+  set(DOXYGEN_XML_PROGRAMLISTING NO)
+  doxygen_add_docs(
+    doxygen
+    "${PROJECT_SOURCE_DIR}"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+  )
+  include(ExternalProject)
+  ExternalProject_Add(
+    mcss
+    PREFIX            "${PROJECT_BINARY_DIR}/src/mcss"
+    GIT_REPOSITORY    https://github.com/mosra/m.css.git
+    GIT_TAG           df894269c25f368405742bc16fcb4bc3ca56384d
+    GIT_PROGRESS      ON
+    PATCH_COMMAND     "${Sed_EXECUTABLE}" -e "s/assert/pass #/g" -i "documentation/doxygen.py"
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND     ""
+    INSTALL_COMMAND   ""
+  )
+  ExternalProject_Get_property(mcss SOURCE_DIR)
+  set(MCSS_DIR ${SOURCE_DIR})
+  set(Python3_ROOT_DIR "${PROJECT_SOURCE_DIR}/.venv/Scripts")
+  set(Python3_FIND_VIRTUALENV FIRST)
+  set(VENV_BIN_DIR bin)
+  if (WIN32)
+    set(VENV_BIN_DIR Scripts)
+  endif()
+  find_package(Python3 COMPONENTS Interpreter)
+  message("MCSS_DIR ${MCSS_DIR}")
+  configure_file(conf.py conf.py)
+  add_custom_target(docs
+    COMMAND
+      Python3::Interpreter
+      -m venv
+      "${CMAKE_CURRENT_BINARY_DIR}/.venv"
+    COMMAND
+      "${CMAKE_CURRENT_BINARY_DIR}/.venv/${VENV_BIN_DIR}/python"
+      -m pip
+      install
+      -r "${PROJECT_SOURCE_DIR}/tools/requirements.txt"
+    COMMAND
+      "${CMAKE_CURRENT_BINARY_DIR}/.venv/${VENV_BIN_DIR}/python"
+      "${MCSS_DIR}/documentation/doxygen.py"
+      "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
+      --no-doxygen
+      # --debug
+    WORKING_DIRECTORY "${DOXYGEN_OUTPUT_DIRECTORY}"
+    VERBATIM
+  )
+  add_dependencies(docs doxygen mcss)
+else()
+  # Add dummy targets
+  set(warn_MSG "ERROR: Cannot generate docs on this platform: 'doxygen' and 'sed' must be installed.")
+  set(warn_CMD
+    COMMAND "${CMAKE_COMMAND}" -E echo
+    COMMAND "${CMAKE_COMMAND}" -E echo ${warn_MSG}
+    COMMAND "${CMAKE_COMMAND}" -E echo
+    COMMAND "${CMAKE_COMMAND}" -E false
+    VERBATIM
+  )
+  add_custom_target(doxygen ${warn_CMD})
+  add_custom_target(mcss ${warn_CMD})
+  add_custom_target(docs ${warn_CMD})
+  message(WARNING "${warn_MSG}")
 endif()
-find_package(Python3 COMPONENTS Interpreter)
-message("MCSS_DIR ${MCSS_DIR}")
-configure_file(conf.py conf.py)
-add_custom_target(docs
-  COMMAND
-    Python3::Interpreter
-    -m venv
-    "${CMAKE_CURRENT_BINARY_DIR}/.venv"
-  COMMAND
-    "${CMAKE_CURRENT_BINARY_DIR}/.venv/${VENV_BIN_DIR}/python"
-    -m pip
-    install
-    -r "${PROJECT_SOURCE_DIR}/tools/requirements.txt"
-  COMMAND
-    "${CMAKE_CURRENT_BINARY_DIR}/.venv/${VENV_BIN_DIR}/python"
-    "${MCSS_DIR}/documentation/doxygen.py"
-    --no-doxygen
-    "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
-  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-  VERBATIM
-)
-add_dependencies(docs mcss doxygen)
 
 # Convenience Targets
 add_custom_target(lint)

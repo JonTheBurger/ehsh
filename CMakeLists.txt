@@ -80,6 +80,23 @@ install(
 if (EHSH_BUILD_TESTS)
   enable_testing()
 
+  find_package(GTest)
+  if (NOT TARGET GTest::gmock_main)
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG        release-1.11.0
+      GIT_SHALLOW    1
+      EXCLUDE_FROM_ALL
+    )
+    FetchContent_MakeAvailable(googletest)
+    if (NOT TARGET GTest::gmock_main)
+      add_library(GTest::gmock_main ALIAS gmock_main)
+    endif()
+  endif()
+  include(GoogleTest)
+
   add_executable(unit test/unit.c)
   target_link_libraries(unit PRIVATE ehsh::ehsh)
   add_test(NAME unit COMMAND unit)

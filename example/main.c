@@ -12,12 +12,12 @@
 // $Macros
 ////////////////////////////////////////////////////////////////////////////////
 #if WIN32
+#include <ehsh/platform/eh.win32.h>
 #define MAIN_EOL EHSH_EOL_CR
 #else
+#include <ehsh/platform/eh.linux.h>
 #define MAIN_EOL EHSH_EOL_LF
 #endif
-
-#include <ehsh/platform/eh.linux.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions

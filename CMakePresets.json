@@ -55,6 +55,7 @@
       "name": "msvc",
       "displayName": "MSVC x64",
       "description": "Microsoft Visual C++ for x64",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -69,11 +70,13 @@
   "buildPresets": [
     {
       "name": "debug",
-      "configurePreset": "debug"
+      "configurePreset": "debug",
+      "configuration": "debug"
     },
     {
       "name": "release",
-      "configurePreset": "release"
+      "configurePreset": "release",
+      "configuration": "release"
     },
     {
       "name": "cov",
@@ -108,6 +111,10 @@
       "name": "install",
       "configurePreset": "release",
       "targets": ["install"]
+    },
+    {
+      "name": "msvc",
+      "configurePreset": "msvc"
     }
   ],
   "testPresets": [

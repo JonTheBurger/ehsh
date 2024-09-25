@@ -17,11 +17,14 @@ add_custom_target(cppcheck
     ${CppCheck_EXECUTABLE}
     --project=${PROJECT_BINARY_DIR}/compile_commands.json
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+  USES_TERMINAL
   VERBATIM
 )
 
 find_program(ClangTidy_EXECUTABLE clang-tidy)
 add_custom_target(clang-tidy
+  SOURCES
+    "${PROJECT_SOURCE_DIR}/.clang-tidy"
   COMMAND
     ${ClangTidy_EXECUTABLE}
     --fix
@@ -29,24 +32,29 @@ add_custom_target(clang-tidy
     -p ${PROJECT_BINARY_DIR}
     ${EHSH_ALL_CODE}
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+  USES_TERMINAL
   VERBATIM
 )
 
 # Format
 find_program(ClangFormat_EXECUTABLE clang-format)
 add_custom_target(clang-format
+  SOURCES
+    "${PROJECT_SOURCE_DIR}/.clang-format"
   COMMAND
     ${ClangFormat_EXECUTABLE}
     -i # inplace edit <file>s
     ${EHSH_ALL_CODE}
   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+  USES_TERMINAL
   VERBATIM
 )
 
 # Docs
 find_package(Doxygen)
-find_program(Sed_EXECUTABLE sed)
-if (Doxygen_FOUND AND Sed_EXECUTABLE)
+find_program(Sed_EXECUTABLE sed PATHS "C:/Program Files/Git/usr/bin")
+find_package(Python3 COMPONENTS Interpreter)
+if (Doxygen_FOUND AND Sed_EXECUTABLE AND Python3_FOUND)
   set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/docs")
   set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
   set(DOXYGEN_GENERATE_XML YES)
@@ -82,6 +90,7 @@ if (Doxygen_FOUND AND Sed_EXECUTABLE)
     GIT_REPOSITORY    https://github.com/mosra/m.css.git
     GIT_TAG           df894269c25f368405742bc16fcb4bc3ca56384d
     GIT_PROGRESS      ON
+    EXCLUDE_FROM_ALL  TRUE
     PATCH_COMMAND     "${Sed_EXECUTABLE}" -e "s/assert/pass #/g" -i "documentation/doxygen.py"
     CONFIGURE_COMMAND ""
     BUILD_COMMAND     ""
@@ -95,10 +104,12 @@ if (Doxygen_FOUND AND Sed_EXECUTABLE)
   if (WIN32)
     set(VENV_BIN_DIR Scripts)
   endif()
-  find_package(Python3 COMPONENTS Interpreter)
-  message("MCSS_DIR ${MCSS_DIR}")
   configure_file(conf.py conf.py)
   add_custom_target(docs
+    SOURCES
+      "${PROJECT_SOURCE_DIR}/.readthedocs.yaml"
+      "${PROJECT_SOURCE_DIR}/tools/conf.py"
+      "${PROJECT_SOURCE_DIR}/tools/requirements.txt"
     COMMAND
       Python3::Interpreter
       -m venv
@@ -115,12 +126,13 @@ if (Doxygen_FOUND AND Sed_EXECUTABLE)
       --no-doxygen
       # --debug
     WORKING_DIRECTORY "${DOXYGEN_OUTPUT_DIRECTORY}"
+    USES_TERMINAL
     VERBATIM
   )
   add_dependencies(docs doxygen mcss)
 else()
   # Add dummy targets
-  set(warn_MSG "ERROR: Cannot generate docs on this platform: 'doxygen' and 'sed' must be installed.")
+  set(warn_MSG "ERROR: Cannot generate docs on this platform: 'doxygen', 'sed', and 'python' must be installed.")
   set(warn_CMD
     COMMAND "${CMAKE_COMMAND}" -E echo
     COMMAND "${CMAKE_COMMAND}" -E echo ${warn_MSG}

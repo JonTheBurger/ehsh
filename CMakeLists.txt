@@ -33,6 +33,9 @@ add_library(ehsh)
 add_library(ehsh::ehsh ALIAS ehsh)
 target_sources(ehsh
   PRIVATE
+    "${PROJECT_SOURCE_DIR}/README.md"
+    "${PROJECT_SOURCE_DIR}/CMakePresets.json"
+    "${PROJECT_SOURCE_DIR}/LICENSE.txt"
     src/ehsh.c
   PUBLIC
     FILE_SET ehsh
@@ -80,8 +83,10 @@ install(
 if (EHSH_BUILD_TESTS)
   enable_testing()
 
+  # GoogleTest
   find_package(GTest)
   if (NOT TARGET GTest::gmock_main)
+    message(STATUS "Fetching GoogleTest from github...")
     include(FetchContent)
     FetchContent_Declare(
       googletest
@@ -102,13 +107,20 @@ if (EHSH_BUILD_TESTS)
   add_test(NAME unit COMMAND unit)
   set_tests_properties(unit PROPERTIES TIMEOUT 5)
 
-  # TODO(Jon): Find GCov + GCovr, create venv, check with sanitizers
+  # Coverage
+  if (CMAKE_C_COMPILER_ID MATCHES Clang)
+    find_program(LLVM_COV_EXECUTABLE llvm-cov)
+    set(GCov_EXECUTABLE  "${GCov_EXECUTABLE} gcov")
+  else()
+    find_program(GCov_EXECUTABLE gcov)
+  endif()
+  find_program(GCovr_EXECUTABLE gcovr)
   add_custom_target(
     cov.html
     COMMAND
     cmake -E make_directory "${PROJECT_BINARY_DIR}/cov"
     COMMAND
-      gcovr
+      "${GCov_EXECUTABLE}"
       --root   "${PROJECT_SOURCE_DIR}"
       --filter "${PROJECT_SOURCE_DIR}/src"
       --decisions
@@ -117,12 +129,19 @@ if (EHSH_BUILD_TESTS)
       --txt-summary
       --html-details "${PROJECT_BINARY_DIR}/cov/cov.html"
       --html-theme github.dark-blue
+      --gcov-executable "${GCov_EXECUTABLE}"
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
     VERBATIM
   )
+
+  # IDE Layout
+  set_target_properties(
+    unit
+    cov.html
+    PROPERTIES
+      FOLDER test
+  )
 endif()
-find_program(GCOVR_EXECUTABLE gcovr)
-message(WARNING "GCOVR_EXECUTABLE ${GCOVR_EXECUTABLE}")
 
 ################################################################################
 # Examples

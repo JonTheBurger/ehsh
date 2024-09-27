@@ -82,6 +82,7 @@ install(
 ################################################################################
 if (EHSH_BUILD_TESTS)
   enable_testing()
+  enable_language(CXX)
 
   # GoogleTest
   find_package(GTest)
@@ -102,8 +103,9 @@ if (EHSH_BUILD_TESTS)
   endif()
   include(GoogleTest)
 
-  add_executable(unit test/unit.c)
-  target_link_libraries(unit PRIVATE ehsh::ehsh)
+  add_executable(unit test/unit.cpp)
+  target_link_libraries(unit PRIVATE ehsh::ehsh GTest::gmock_main)
+  target_compile_features(unit PRIVATE cxx_std_20)
   add_test(NAME unit COMMAND unit)
   set_tests_properties(unit PROPERTIES TIMEOUT 5)
 
@@ -120,11 +122,9 @@ if (EHSH_BUILD_TESTS)
     COMMAND
     cmake -E make_directory "${PROJECT_BINARY_DIR}/cov"
     COMMAND
-      "${GCov_EXECUTABLE}"
+      "${GCovr_EXECUTABLE}"
       --root   "${PROJECT_SOURCE_DIR}"
       --filter "${PROJECT_SOURCE_DIR}/src"
-      --decisions
-      --calls
       --exclude-unreachable-branches
       --txt-summary
       --html-details "${PROJECT_BINARY_DIR}/cov/cov.html"

@@ -40,7 +40,8 @@
       "description": "Debug build with Code Coverage enabled",
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_C_FLAGS": "--coverage"
+        "CMAKE_C_FLAGS": "--coverage",
+        "CMAKE_CXX_FLAGS": "--coverage"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {

@@ -1,4 +1,8 @@
-/** @file
+/**
+ * @addtogroup platform
+ * @{
+ *
+ * @file
  * SPDX-License-Identifier: BSL-1.0
  */
 #ifndef EHSH_LINUX_H

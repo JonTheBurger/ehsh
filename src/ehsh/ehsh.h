@@ -1,6 +1,7 @@
 /** @file
  * SPDX-License-Identifier: BSL-1.0
  * @addtogroup ehsh
+ * Core shell functionality
  * @{
  */
 #ifndef EHSH_H
@@ -23,35 +24,35 @@ extern "C" {
 // $Macros
 ////////////////////////////////////////////////////////////////////////////////
 #define EHSH_HISTORY_SIZE 10
-#define EHSH_CMDLINE_SIZE 16
-#define EHSH_MAX_ARGS 4  // Up to 15
-#define EHSH_PROMPT "> "
 
-#define EHSH_EMSG_NOCMD "No such command"
-#define EHSH_EMSG_SYNTAX "Syntax error"
-#define EHSH_EMSG_AUTH "Bad permissions"
-#define EHSH_EMSG_ARG "Bad argument(s)"
-#define EHSH_EMSG_BUSY "Subsystem busy"
-
-#define EHSH_EOL_LF 0
-#define EHSH_EOL_CR 1
-
-#define EHSH_TERMIOS 1
-
+/// ASCII Backspace as a string literal (used for literal concatenation)
 #define EHSH_BACKSPACE "\x08"
+/// ASCII Delete as a string literal (used for literal concatenation)
+#define EHSH_DELETE    "\x7F"
 
 ////////////////////////////////////////////////////////////////////////////////
 // $Types
 ////////////////////////////////////////////////////////////////////////////////
-/// ASCII control characters
+/// ASCII control characters as integers
 typedef enum EhAscii {
   EHSH_ASCII_EOT = 4,    ///< End of transmission
   EHSH_ASCII_BS  = 8,    ///< Backspace
   EHSH_ASCII_DEL = 127,  ///< Delete
 } EhAscii_t;
 
+/// Determines input line endings that, when encountered, parse & execute the command line.
+typedef enum EhEol {
+  EHSH_EOL_LF = 0, ///< Commands are parsed once LF is encountered.
+  EHSH_EOL_CR = 1, ///< Commands are parsed once CR is encountered.
+} EhEol_t;
+
+/// Shell state & configuration.
 typedef struct EhShell   EhShell_t;
+/// Shell configuration passed to EhInit().
+typedef struct EhConfig EhConfig_t;
+/// Command line command storage.
 typedef struct EhCommand EhCommand_t;
+/// Function pointer called when a command line command is parsed.
 typedef void (*EhCallback_t)(EhShell_t* shell);
 
 /// Command line command
@@ -64,7 +65,8 @@ struct EhCommand {
   EhCallback_t Callback;
 };
 
-typedef struct EhConfig {
+/// Options users have for configuring the shell. @see EhInit() @see EhStty()
+struct EhConfig {
   /// Array of commands handled by this shell. @note Commands must outlive the shell.
   const EhCommand_t* Commands;
   /// Number of Commands handled by this shell
@@ -72,6 +74,7 @@ typedef struct EhConfig {
   /// When to process commands for input line endings.
   /// Set to 0 to execute commands on LF (for CR+LF and LF-only line endings)
   /// Set to 1 to execute commands on CR only (for CR-only line endings)
+  /// @see EhEol
   uint8_t Eol : 1;
   /// Act as a teletype terminal (echo chars as they are typed)
   uint8_t Tty : 1;
@@ -79,7 +82,7 @@ typedef struct EhConfig {
   uint8_t Cr : 1;
   /// Print line feed upon new line
   uint8_t Lf : 1;
-} EhConfig_t;
+};
 
 /** State & Configuration associated with the current shell. To initialize,
  * memset to 0 and set Eol, Tty, Cr, and Lf.

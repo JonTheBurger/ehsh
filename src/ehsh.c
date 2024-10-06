@@ -13,6 +13,13 @@
 #include <ehsh/platform/eh.platform.h>
 
 ////////////////////////////////////////////////////////////////////////////////
+// $Macros
+////////////////////////////////////////////////////////////////////////////////
+#if __STDC_VERSION__ > 201112L  // for static_assert
+static_assert(EHSH_MAX_ARGS <= 15, "ehsh currently only supports up to a maximum of 15 arguments");
+#endif /* __STDC_VERSION__ > 201112L */
+
+////////////////////////////////////////////////////////////////////////////////
 // $Prototypes
 ////////////////////////////////////////////////////////////////////////////////
 /** @brief Handles the currently loaded EhShell.CmdLine,
@@ -40,7 +47,7 @@ static void EhOnNewline(EhShell_t* self)
   }
   if (!EhHandleCmdLine(self))
   {
-    EhPutStr(self, EHSH_EMSG_NOCMD " \"");
+    EhPutStr(self, "No such command \"");
     EhPutStr(self, self->CmdLine);
     EhPutChar(self, '"');
     EhPutNewline(self);
@@ -181,7 +188,7 @@ void EhExec(EhShell_t* self)
         EhOnTab(self);
       }
     }
-    else
+    else if (chr != -1)
     {
       EhOnChar(self, chr);
     }
@@ -218,6 +225,11 @@ static bool EhHandleCmdLine(EhShell_t* self)
 }
 
 // TODO: Multiple spaces
+// TODO: Comment
+// TODO: Empty command just prints a newline
+// TODO: Password mode
+// TODO: History? (shell hook?)
+// TODO: RunOne (so ehsh doesn't need its own thread)
 static void EhTokenize(EhShell_t* self)
 {
   self->Nul      = '\0';

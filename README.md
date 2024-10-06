@@ -1,19 +1,26 @@
 # ehsh
 
-Introducing `ehsh`! The world's most okay shell for embedded systems!
+Introducing `ehsh`! The world's most okay shell for embedded systems! `ehsh`
+aims to be simple and boring. It's probably similar to what you might write if
+you had a spare day or two to write a shell, plus time to make docs, tests, etc.
+Has niceties like tab completion, as seen below:
 
-_**TODO:**_ Cool Gif ;)
+![Simple example gif](docs/ehsh.gif)
+
+Users register commands as function pointers with a single parameter,
+`EhShell_t*`, which contains the current command line with the arguments
+tokenized, as shown below:
+
+![](docs/args.drawio.svg)
+
+The arguments are stored as offsets into the `CmdLine`, and each argument is
+null terminated.
 
 ## Features
 
 Be amazed by state-of-the-art (for embedded) features, such as:
 
-- Enough example gifs to blow out your 1.2k baud modem (one) - see above!
-- No heap allocation or global memory (multiple terminals)!
-- Select input EOL (CR or LF) and output EOL (CR, LF, CR+LF) at runtime!
-- Select tty mode (echo typed characters or not) at runtime!
-- Tab completion!
-- Context pointers!
+- Statically allocated (no heap, no global state)!
 - Only requires C99!
     - `memset`
     - `strchr`
@@ -21,13 +28,13 @@ Be amazed by state-of-the-art (for embedded) features, such as:
     - `strncpy`
     - `<stdbool.h>`
     - `<stdint.h>`
-- Actually tested & packaged (Pinky swear!)!
+- Context pointers (Allows users to extend the shell without global state)!
 - Desktop examples!
+- Select tty mode (echo typed characters or not) at runtime!
+- Select input EOL (CR or LF) and output EOL (CR, LF, CR+LF) at runtime!
+- Tab completion!
+- Actually tested & packaged (Pinky swear!)!
 - Super permissive license!
-
-Enjoy thrilling, pragmatic limitations, including:
-
-- Current command line & cursor are stored in fixed buffers!
 
 ## Usage
 

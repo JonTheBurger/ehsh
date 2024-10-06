@@ -22,12 +22,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
+/// [Main]
 int main(void)
 {
   EhPlatform_t* platform = NULL;
   EhPlatformInit(&platform);
 
   const EhCommand_t cmds[] = {
+    {
+      "#",
+      "Comment",
+      &EhComment,
+    },
     {
       "echo",
       "Prints arguments",
@@ -42,6 +48,11 @@ int main(void)
       "help",
       "Prints commands",
       &EhHelp,
+    },
+    {
+      "stty",
+      "Configure shell EOL, TTY",
+      &EhStty,
     },
   };
   EhShell_t shell;
@@ -61,3 +72,4 @@ int main(void)
   EhPlatformDeInit(&platform);
   return 0;
 }
+/// [Main]

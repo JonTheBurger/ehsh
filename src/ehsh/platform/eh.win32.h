@@ -1,4 +1,8 @@
-/** @file
+/**
+ * @addtogroup platform
+ * @{
+ *
+ * @file
  * SPDX-License-Identifier: BSL-1.0
  */
 #ifndef EHSH_WIN32_H
@@ -85,6 +89,7 @@ void EhPutChar(EhShell_t* self, char c)
 {
   if ((self->Cursor == 0) && (c == EHSH_ASCII_BS))
   {
+    // TODO: That ain't right
     printf("lmao");
   }
   else

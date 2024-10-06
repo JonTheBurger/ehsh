@@ -29,9 +29,9 @@ const static EhCommand_t BUILTIN_COMMANDS[] = {
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
-class GivenTtyCrLfShell : public testing::Test {
+class GivenShell : public testing::Test {
 public:
-  GivenTtyCrLfShell() noexcept
+  GivenShell() noexcept
   {
     EhGetCharFn = &GetCharHook;
     EhPutCharFn = &PutCharHook;
@@ -39,23 +39,19 @@ public:
     const EhConfig_t cfg = {
       .Commands     = &BUILTIN_COMMANDS[0],
       .CommandCount = std::size(BUILTIN_COMMANDS),
-      .Eol          = EHSH_EOL_LF,
-      .Tty          = 1,
-      .Cr           = 1,
-      .Lf           = 1,
     };
     EhInit(&Shell, &cfg);
     Shell.Context = this;
   }
 
-  ~GivenTtyCrLfShell() noexcept override
+  ~GivenShell() noexcept override
   {
     EhDeInit(&Shell);
   }
 
   static char GetCharHook(EhShell_t* shell)
   {
-    auto& self = *static_cast<GivenTtyCrLfShell*>(shell->Context);
+    auto& self = *static_cast<GivenShell*>(shell->Context);
     char chr = self.Input.front();
 
     self.Input.erase(0, 1);
@@ -65,7 +61,7 @@ public:
 
   static void PutCharHook(EhShell_t* shell, char chr)
   {
-    auto& self = *static_cast<GivenTtyCrLfShell*>(shell->Context);
+    auto& self = *static_cast<GivenShell*>(shell->Context);
 
     if ((chr == EHSH_ASCII_BS) || (chr == EHSH_ASCII_DEL))
     {
@@ -84,6 +80,26 @@ protected:
   std::string Input{};  //< Simulated input stream, say typed from a keyboard
   std::string Screen{}; //< Simulated screen output; backspaces remove chars
   std::string Output{}; //< Raw simulated output stream; backspaces are appended as chars
+};
+
+class GivenTtyCrLfShell : public GivenShell {
+public:
+  GivenTtyCrLfShell() noexcept
+  {
+    Shell.Eol = EHSH_EOL_LF;
+    Shell.Tty = true;
+    Shell.Cr = true;
+    Shell.Lf = true;
+  }
+};
+
+class GivenCrShell : public GivenShell {
+public:
+  GivenCrShell() noexcept
+  {
+    Shell.Eol = EHSH_EOL_CR;
+    Shell.Cr = true;
+  }
 };
 
 TEST_F(GivenTtyCrLfShell, WhenInvalidCommandEntered_ThenErrorMessagePrinted)
@@ -133,6 +149,22 @@ TEST_F(GivenTtyCrLfShell, When1CommandMatchesInput_AndTabIsPressed_ThenTabComple
   );
 }
 
+TEST_F(GivenTtyCrLfShell, WhenMultipleCommandMatchesInput_AndTabIsPressed_ThenTabPrintsMatches)
+{
+  Input = "e\t";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Output,
+    "> e\r\n"
+    "echo\r\n"
+    "exit\r\n"
+    "> e"
+  );
+}
+
 TEST_F(GivenTtyCrLfShell, WhenCharsEnteredBeyondCommandLine_ThenScreenTruncatesUsingLastChar)
 {
   Input.resize(EHSH_CMDLINE_SIZE, 'a'); // Fill the command line buffer
@@ -149,6 +181,26 @@ TEST_F(GivenTtyCrLfShell, WhenCharsEnteredBeyondCommandLine_ThenScreenTruncatesU
   ASSERT_EQ(expected, Screen);
 }
 
+TEST_F(GivenTtyCrLfShell, WhenArgsEnteredBeyondArgMax_ThenTODO)
+{
+  ASSERT_EQ(EHSH_MAX_ARGS, 4); // If this is > 4, this test needs updated; add more args
+  Input += "echo 1 2 3 4 5\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Output,
+    // Also need to add more args below:
+    "> echo 1 2 3 4 5\r\n"
+    "1\r\n"
+    "2\r\n"
+    "3\r\n"
+    "4 5\r\n"
+    "> "
+  );
+}
+
 TEST_F(GivenTtyCrLfShell, WhenBackspaceSent_ThenSpaceOverwritesLastChar)
 {
   Input = "ec" EHSH_BACKSPACE;
@@ -160,5 +212,38 @@ TEST_F(GivenTtyCrLfShell, WhenBackspaceSent_ThenSpaceOverwritesLastChar)
     Output,
     // Write "Backspace" to move cursor, "<space>" to write blank space, and "Backspace" to move cursor again.
     "> ec" EHSH_BACKSPACE " " EHSH_BACKSPACE
+  );
+}
+
+TEST_F(GivenTtyCrLfShell, WhenBackspaceSent_AndCmdLineEmpty_ThenNothingHappens)
+{
+  Input = EHSH_BACKSPACE EHSH_DELETE EHSH_BACKSPACE;
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Output,
+    "> "
+  );
+}
+
+TEST_F(GivenTtyCrLfShell, WhenNullCommandCallbackFound_ThenCommandIgnored)
+{
+  const EhCommand_t nullcmd[] = {
+    { "Null", "Null", nullptr },
+  };
+  Shell.Cmds = nullcmd;
+  Shell.CmdCount = 1;
+
+  Input = "Null\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Output,
+    "> Null\r\n"
+    "> "
   );
 }

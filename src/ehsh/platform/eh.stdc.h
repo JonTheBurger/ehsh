@@ -1,6 +1,10 @@
-/* Copyright (c) 2024 Jonathan Povirk (jontheburger at gmail dot com)
- * Distributed under the Boost Software License, Version 1.0. (See accompanying
- * file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+/**
+ * @addtogroup platform
+ * Example code for implementing platform-specific ehsh hooks.
+ * @{
+ *
+ * @file
+ * SPDX-License-Identifier: BSL-1.0
  */
 #ifndef EHSH_STDC_H
 #define EHSH_STDC_H
@@ -33,10 +37,10 @@ char EhGetChar(EhShell_t* self)
   return (char)getchar();
 }
 
-void EhPutChar(EhShell_t* self, char c)
+void EhPutChar(EhShell_t* self, char chr)
 {
   (void)self;
-  putchar(c);
+  putchar(chr);
 }
 
 void EhPutStr(EhShell_t* self, const char* str)

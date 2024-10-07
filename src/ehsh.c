@@ -214,10 +214,13 @@ static bool EhHandleCmdLine(EhShell_t* self)
 
   for (size_t i = 0; ((!found) && (i < self->CmdCount)); ++i)
   {
-    if ((self->Cmds[i].Callback != NULL) && (strncmp(self->Cmds[i].Name, self->CmdLine, EHSH_CMDLINE_SIZE) == 0))
+    if ((self->Cmds[i].Name != NULL) && (strncmp(self->Cmds[i].Name, self->CmdLine, EHSH_CMDLINE_SIZE) == 0))
     {
       found = true;
-      self->Cmds[i].Callback(self);
+      if (self->Cmds[i].Callback != NULL)
+      {
+        self->Cmds[i].Callback(self);
+      }
     }
   }
 

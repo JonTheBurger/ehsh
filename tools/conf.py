@@ -1,5 +1,11 @@
 DOXYFILE = 'Doxyfile.doxygen'
 
+STYLESHEETS = [
+    "m-dark+documentation.compiled.css",
+    "docs.css",
+    "vscode.css",
+]
+
 LINKS_NAVBAR1 = [
     ("Pages", 'pages', []),
     ("Modules", 'modules', []),

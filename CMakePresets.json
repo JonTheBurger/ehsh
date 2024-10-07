@@ -90,17 +90,17 @@
     },
     {
       "name": "format",
-      "configurePreset": "debug",
+      "configurePreset": "cov",
       "targets": ["format"]
     },
     {
       "name": "lint",
-      "configurePreset": "debug",
+      "configurePreset": "cov",
       "targets": ["lint"]
     },
     {
       "name": "docs",
-      "configurePreset": "debug",
+      "configurePreset": "cov",
       "targets": ["docs"]
     },
     {
@@ -189,7 +189,7 @@
       "steps": [
         {
           "type": "configure",
-          "name": "debug"
+          "name": "cov"
         },
         {
           "type": "build",
@@ -202,7 +202,7 @@
       "steps": [
         {
           "type": "configure",
-          "name": "debug"
+          "name": "cov"
         },
         {
           "type": "build",
@@ -215,7 +215,7 @@
       "steps": [
         {
           "type": "configure",
-          "name": "debug"
+          "name": "cov"
         },
         {
           "type": "build",

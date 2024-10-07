@@ -70,6 +70,7 @@ if (Doxygen_FOUND AND Sed_EXECUTABLE AND Python3_FOUND)
     */tools/*
     */mcss/*
   )
+  # set(DOXYGEN_HTML_EXTRA_STYLESHEET "${PROJECT_SOURCE_DIR}/tools/vscode.css")
   set(DOXYGEN_FILTER_SOURCE_FILES YES)
   set(DOXYGEN_INPUT_FILTER [[-e \"s#SPDX-License-Identifier: \([^[:space:] ]\+\)#@copyright <a href=\\\"https://spdx.org/licenses/\\1.html\\\">\\1</a>#g\"]])
   set(DOXYGEN_INPUT_FILTER "${Sed_EXECUTABLE} ${DOXYGEN_INPUT_FILTER}")
@@ -78,6 +79,7 @@ if (Doxygen_FOUND AND Sed_EXECUTABLE AND Python3_FOUND)
   set(DOXYGEN_DOT_IMAGE_FORMAT svg)
   set(DOXYGEN_INTERACTIVE_SVG YES)
   set(DOXYGEN_XML_PROGRAMLISTING NO)
+  set(DOXYGEN_HTML_EXTRA_FILES "${PROJECT_BINARY_DIR}/cov/cov.html")
   doxygen_add_docs(
     doxygen
     "${PROJECT_SOURCE_DIR}"
@@ -105,6 +107,9 @@ if (Doxygen_FOUND AND Sed_EXECUTABLE AND Python3_FOUND)
     set(VENV_BIN_DIR Scripts)
   endif()
   configure_file(conf.py conf.py)
+  configure_file(${MCSS_DIR}/css/m-dark+documentation.compiled.css m-dark+documentation.compiled.css)
+  configure_file(docs.css docs.css)
+  configure_file(vscode.css vscode.css)
   add_custom_target(docs
     SOURCES
       "${PROJECT_SOURCE_DIR}/.readthedocs.yaml"
@@ -125,11 +130,13 @@ if (Doxygen_FOUND AND Sed_EXECUTABLE AND Python3_FOUND)
       "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
       --no-doxygen
       # --debug
+    COMMAND
+      "${CMAKE_COMMAND}" -E copy_directory "${PROJECT_BINARY_DIR}/cov" "${PROJECT_BINARY_DIR}/docs/html/cov"
     WORKING_DIRECTORY "${DOXYGEN_OUTPUT_DIRECTORY}"
     USES_TERMINAL
     VERBATIM
   )
-  add_dependencies(docs doxygen mcss)
+  add_dependencies(docs doxygen mcss cov.html)
 else()
   # Add dummy targets
   set(warn_MSG "ERROR: Cannot generate docs on this platform: 'doxygen', 'sed', and 'python' must be installed.")

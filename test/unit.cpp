@@ -134,6 +134,20 @@ TEST_F(GivenTtyCrLfShell, When3EchoArgsEntered_ThenPrintsCrLfPerLine)
   );
 }
 
+TEST_F(GivenCrShell, When3EchoArgsEntered_ThenPrintsOnlyOutput)
+{
+  Input = "echo a b c\r";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Output,
+    "a\r"
+    "b\r"
+    "c\r"
+  );
+}
 TEST_F(GivenTtyCrLfShell, When1CommandMatchesInput_AndTabIsPressed_ThenTabCompletesMatch)
 {
   Input = "ec\t";
@@ -231,19 +245,41 @@ TEST_F(GivenTtyCrLfShell, WhenBackspaceSent_AndCmdLineEmpty_ThenNothingHappens)
 TEST_F(GivenTtyCrLfShell, WhenNullCommandCallbackFound_ThenCommandIgnored)
 {
   const EhCommand_t nullcmd[] = {
-    { "Null", "Null", nullptr },
+    { "null", "null", nullptr },
   };
   Shell.Cmds = nullcmd;
   Shell.CmdCount = 1;
 
-  Input = "Null\r\n";
+  Input = "null\r\n";
   Input += static_cast<char>(EHSH_ASCII_EOT);
 
   EhExec(&Shell);
 
   ASSERT_EQ(
     Output,
-    "> Null\r\n"
+    "> null\r\n"
     "> "
   );
 }
+
+TEST_F(GivenTtyCrLfShell, WhenNullCommandNameFound_ThenCommandIgnored)
+{
+  const EhCommand_t nullcmd[] = {
+    { nullptr, nullptr, nullptr },
+  };
+  Shell.Cmds = nullcmd;
+  Shell.CmdCount = 1;
+
+  Input = "null\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Output,
+    "> null\r\n"
+    "No such command \"null\"\r\n"
+    "> "
+  );
+}
+

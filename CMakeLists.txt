@@ -125,6 +125,7 @@ if (EHSH_BUILD_TESTS)
       "${GCovr_EXECUTABLE}"
       --root   "${PROJECT_SOURCE_DIR}"
       --filter "${PROJECT_SOURCE_DIR}/src"
+      --exclude ".*platform.*"
       --exclude-unreachable-branches
       --txt-summary
       --html-details "${PROJECT_BINARY_DIR}/cov/cov.html"

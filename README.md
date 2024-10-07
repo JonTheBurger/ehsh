@@ -38,6 +38,8 @@ Be amazed by state-of-the-art (for embedded) features, such as:
 
 ## Usage
 
+@snippet example/main.c Main
+
 ```cmake
 add_subdirectory(ehsh)
 target_link_libraries(main
@@ -81,6 +83,7 @@ Simply run `devbox shell`, followed by one of the convenience `make` targets.
 - Packages / Update
     - Vcpkg: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-packaging
     - deb?
+
 
 @dir src
 @brief src

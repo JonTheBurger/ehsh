@@ -5,8 +5,8 @@
 // $Headers
 ////////////////////////////////////////////////////////////////////////////////
 // std
-#include <cstring>   // memset
-#include <string>    // std::string
+#include <cstring>  // memset
+#include <string>   // std::string
 
 // 3rd
 #include <gtest/gtest.h>
@@ -52,7 +52,7 @@ public:
   static char GetCharHook(EhShell_t* shell)
   {
     auto& self = *static_cast<GivenShell*>(shell->Context);
-    char chr = self.Input.front();
+    char  chr  = self.Input.front();
 
     self.Input.erase(0, 1);
 
@@ -77,9 +77,9 @@ public:
 
 protected:
   EhShell_t   Shell{};
-  std::string Input{};  //< Simulated input stream, say typed from a keyboard
-  std::string Screen{}; //< Simulated screen output; backspaces remove chars
-  std::string Output{}; //< Raw simulated output stream; backspaces are appended as chars
+  std::string Input{};   //< Simulated input stream, say typed from a keyboard
+  std::string Screen{};  //< Simulated screen output; backspaces remove chars
+  std::string Output{};  //< Raw simulated output stream; backspaces are appended as chars
 };
 
 class GivenTtyCrLfShell : public GivenShell {
@@ -88,8 +88,8 @@ public:
   {
     Shell.Eol = EHSH_EOL_LF;
     Shell.Tty = true;
-    Shell.Cr = true;
-    Shell.Lf = true;
+    Shell.Cr  = true;
+    Shell.Lf  = true;
   }
 };
 
@@ -98,9 +98,37 @@ public:
   GivenCrShell() noexcept
   {
     Shell.Eol = EHSH_EOL_CR;
-    Shell.Cr = true;
+    Shell.Cr  = true;
   }
 };
+
+class GivenTtyCrShell : public GivenShell {
+public:
+  GivenTtyCrShell() noexcept
+  {
+    Shell.Eol = EHSH_EOL_CR;
+    Shell.Cr  = true;
+    Shell.Tty = true;
+  }
+};
+
+TEST(GivenNoShell, WhenInitedWithNullShell_ThenNullReturned)
+{
+  EhConfig_t config{};
+  ASSERT_EQ(nullptr, EhInit(nullptr, &config));
+}
+
+TEST_F(GivenTtyCrLfShell, WhenArgAtBeyondArgCount_ThenNullReturned)
+{
+  ASSERT_EQ(nullptr, EhArgAt(&Shell, Shell.ArgCount));
+}
+
+TEST_F(GivenTtyCrLfShell, WhenInitedWithNullConfig_ThenNoChangesOccur)
+{
+  const EhShell_t old = Shell;
+  ASSERT_EQ(&Shell, EhInit(&Shell, nullptr));
+  ASSERT_EQ(0, memcmp(&old, &Shell, sizeof(Shell)));
+}
 
 TEST_F(GivenTtyCrLfShell, WhenInvalidCommandEntered_ThenErrorMessagePrinted)
 {
@@ -113,8 +141,7 @@ TEST_F(GivenTtyCrLfShell, WhenInvalidCommandEntered_ThenErrorMessagePrinted)
     Output,
     "> bogus\r\n"
     "No such command \"bogus\"\r\n"
-    "> "
-  );
+    "> ");
 }
 
 TEST_F(GivenTtyCrLfShell, When3EchoArgsEntered_ThenPrintsCrLfPerLine)
@@ -130,8 +157,7 @@ TEST_F(GivenTtyCrLfShell, When3EchoArgsEntered_ThenPrintsCrLfPerLine)
     "a\r\n"
     "b\r\n"
     "c\r\n"
-    "> "
-  );
+    "> ");
 }
 
 TEST_F(GivenCrShell, When3EchoArgsEntered_ThenPrintsOnlyOutput)
@@ -145,8 +171,7 @@ TEST_F(GivenCrShell, When3EchoArgsEntered_ThenPrintsOnlyOutput)
     Output,
     "a\r"
     "b\r"
-    "c\r"
-  );
+    "c\r");
 }
 TEST_F(GivenTtyCrLfShell, When1CommandMatchesInput_AndTabIsPressed_ThenTabCompletesMatch)
 {
@@ -159,8 +184,7 @@ TEST_F(GivenTtyCrLfShell, When1CommandMatchesInput_AndTabIsPressed_ThenTabComple
     Output,
     "> ec\r\n"
     "echo\r\n"
-    "> echo"
-  );
+    "> echo");
 }
 
 TEST_F(GivenTtyCrLfShell, WhenMultipleCommandMatchesInput_AndTabIsPressed_ThenTabPrintsMatches)
@@ -175,29 +199,66 @@ TEST_F(GivenTtyCrLfShell, WhenMultipleCommandMatchesInput_AndTabIsPressed_ThenTa
     "> e\r\n"
     "echo\r\n"
     "exit\r\n"
-    "> e"
-  );
+    "> e");
+}
+
+TEST_F(GivenTtyCrLfShell, CommandHasNullName_AndTabIsPressed_ThenNothingPrinted)
+{
+  const EhCommand_t nullcmd[] = {
+    { nullptr, nullptr, nullptr },
+  };
+  Shell.Cmds     = nullcmd;
+  Shell.CmdCount = 1;
+
+  Input = "\t";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(Output, "> ");
+}
+
+TEST_F(GivenCrShell, WhenTabIsPressed_ThenNothingPrinted)
+{
+  Input = "ech\t";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(Output, "");
 }
 
 TEST_F(GivenTtyCrLfShell, WhenCharsEnteredBeyondCommandLine_ThenScreenTruncatesUsingLastChar)
 {
-  Input.resize(EHSH_CMDLINE_SIZE, 'a'); // Fill the command line buffer
-  Input += 'b'; // and add one more character
+  Input.resize(EHSH_CMDLINE_SIZE, 'a');  // Fill the command line buffer
+  Input += 'b';                          // and add one more character
   Input += static_cast<char>(EHSH_ASCII_EOT);
 
   std::string expected = "> ";
   expected.insert(expected.end(), EHSH_CMDLINE_SIZE, 'a');
   expected.pop_back();
-  expected += 'b'; // The last char should be the most recently entered char
+  expected += 'b';  // The last char should be the most recently entered char
 
   EhExec(&Shell);
 
   ASSERT_EQ(expected, Screen);
 }
 
+TEST_F(GivenCrShell, WhenCharsEnteredBeyondCommandLine_BufferTruncatesToLastChar)
+{
+  Input = "echo abcdefghijk!";
+  Input += '\r';
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  // Last printable character 'k' is overwritten
+  ASSERT_EQ("abcdefghij!\r", Screen);
+}
+
 TEST_F(GivenTtyCrLfShell, WhenArgsEnteredBeyondArgMax_ThenTODO)
 {
-  ASSERT_EQ(EHSH_MAX_ARGS, 4); // If this is > 4, this test needs updated; add more args
+  ASSERT_EQ(EHSH_MAX_ARGS, 4);  // If this is > 4, this test needs updated; add more args
   Input += "echo 1 2 3 4 5\r\n";
   Input += static_cast<char>(EHSH_ASCII_EOT);
 
@@ -211,8 +272,7 @@ TEST_F(GivenTtyCrLfShell, WhenArgsEnteredBeyondArgMax_ThenTODO)
     "2\r\n"
     "3\r\n"
     "4 5\r\n"
-    "> "
-  );
+    "> ");
 }
 
 TEST_F(GivenTtyCrLfShell, WhenBackspaceSent_ThenSpaceOverwritesLastChar)
@@ -225,8 +285,7 @@ TEST_F(GivenTtyCrLfShell, WhenBackspaceSent_ThenSpaceOverwritesLastChar)
   ASSERT_EQ(
     Output,
     // Write "Backspace" to move cursor, "<space>" to write blank space, and "Backspace" to move cursor again.
-    "> ec" EHSH_BACKSPACE " " EHSH_BACKSPACE
-  );
+    "> ec" EHSH_BACKSPACE " " EHSH_BACKSPACE);
 }
 
 TEST_F(GivenTtyCrLfShell, WhenBackspaceSent_AndCmdLineEmpty_ThenNothingHappens)
@@ -238,8 +297,19 @@ TEST_F(GivenTtyCrLfShell, WhenBackspaceSent_AndCmdLineEmpty_ThenNothingHappens)
 
   ASSERT_EQ(
     Output,
-    "> "
-  );
+    "> ");
+}
+
+TEST_F(GivenShell, WhenBackspaceSent_ThenCursorMovesBackwards)
+{
+  Input = "exit";
+  Input += EHSH_BACKSPACE EHSH_DELETE EHSH_BACKSPACE;
+  Input += "cho hello\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(Output, "hello");
 }
 
 TEST_F(GivenTtyCrLfShell, WhenNullCommandCallbackFound_ThenCommandIgnored)
@@ -247,7 +317,7 @@ TEST_F(GivenTtyCrLfShell, WhenNullCommandCallbackFound_ThenCommandIgnored)
   const EhCommand_t nullcmd[] = {
     { "null", "null", nullptr },
   };
-  Shell.Cmds = nullcmd;
+  Shell.Cmds     = nullcmd;
   Shell.CmdCount = 1;
 
   Input = "null\r\n";
@@ -258,8 +328,7 @@ TEST_F(GivenTtyCrLfShell, WhenNullCommandCallbackFound_ThenCommandIgnored)
   ASSERT_EQ(
     Output,
     "> null\r\n"
-    "> "
-  );
+    "> ");
 }
 
 TEST_F(GivenTtyCrLfShell, WhenNullCommandNameFound_ThenCommandIgnored)
@@ -267,7 +336,7 @@ TEST_F(GivenTtyCrLfShell, WhenNullCommandNameFound_ThenCommandIgnored)
   const EhCommand_t nullcmd[] = {
     { nullptr, nullptr, nullptr },
   };
-  Shell.Cmds = nullcmd;
+  Shell.Cmds     = nullcmd;
   Shell.CmdCount = 1;
 
   Input = "null\r\n";
@@ -279,7 +348,25 @@ TEST_F(GivenTtyCrLfShell, WhenNullCommandNameFound_ThenCommandIgnored)
     Output,
     "> null\r\n"
     "No such command \"null\"\r\n"
-    "> "
-  );
+    "> ");
 }
 
+TEST_F(GivenTtyCrShell, WhenLfEntered_ThenCommandNotHandled)
+{
+  Input = "echo a\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(Output, "> echo a");
+}
+
+TEST_F(GivenTtyCrShell, WhenNegative1Read_ThenNothingHappens)
+{
+  Input = static_cast<char>(-1);
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(Output, "> ");
+}

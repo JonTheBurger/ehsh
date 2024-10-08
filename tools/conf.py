@@ -1,7 +1,7 @@
 DOXYFILE = 'Doxyfile.doxygen'
 
 STYLESHEETS = [
-    "m-dark+documentation.compiled.css",
+    "../css/m-dark+documentation.compiled.css",
     "docs.css",
     "vscode.css",
 ]

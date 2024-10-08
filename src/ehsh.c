@@ -173,7 +173,7 @@ void EhExec(EhShell_t* self)
         EhOnNewline(self);
       }
     }
-    else if ((chr < 0) || (chr == EHSH_ASCII_EOT))
+    else if (chr == EHSH_ASCII_EOT)
     {
       self->Stop = 1;
     }
@@ -188,7 +188,7 @@ void EhExec(EhShell_t* self)
         EhOnTab(self);
       }
     }
-    else if (chr != -1)
+    else if (chr != (char)-1)
     {
       EhOnChar(self, chr);
     }

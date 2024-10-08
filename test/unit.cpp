@@ -21,8 +21,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 static constexpr size_t  TEST_BUF_SIZE      = 128;
 const static EhCommand_t BUILTIN_COMMANDS[] = {
+  EHSH_COMMAND_COMMENT,
   EHSH_COMMAND_HELP,
   EHSH_COMMAND_ECHO,
+  EHSH_COMMAND_STTY,
   EHSH_COMMAND_EXIT,
 };
 
@@ -93,12 +95,22 @@ public:
   }
 };
 
+class GivenLfShell : public GivenShell {
+public:
+  GivenLfShell() noexcept
+  {
+    Shell.Eol = EHSH_EOL_LF;
+    Shell.Lf  = true;
+  }
+};
+
 class GivenCrShell : public GivenShell {
 public:
   GivenCrShell() noexcept
   {
     Shell.Eol = EHSH_EOL_CR;
     Shell.Cr  = true;
+    Shell.Tty = false;
   }
 };
 
@@ -369,4 +381,156 @@ TEST_F(GivenTtyCrShell, WhenNegative1Read_ThenNothingHappens)
   EhExec(&Shell);
 
   ASSERT_EQ(Output, "> ");
+}
+
+TEST_F(GivenTtyCrLfShell, WhenExitEntered_ThenShellStops)
+{
+  Input = "exit\r\n";
+  // No EOT!
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Screen,
+    "> exit\r\n"
+    "> ");
+}
+
+TEST_F(GivenTtyCrLfShell, WhenCommentEntered_ThenCommentPrinted)
+{
+  Input = "# hello\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Screen,
+    "> # hello\r\n"
+    "> ");
+}
+
+TEST_F(GivenTtyCrLfShell, WhenHelpEntered_ThenCommandsPrinted)
+{
+  Input = "help\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Screen,
+    "> help\r\n"
+    "#: Comment\r\n"
+    "help: Prints commands\r\n"
+    "echo: Prints arguments\r\n"
+    "stty: Configure shell EOL, TTY\r\n"
+    "exit: Quits the shell\r\n"
+    "> ");
+}
+
+TEST_F(GivenTtyCrLfShell, WhenHelpEnteredFor2MatchingCommands_ThenHelpsPrinted)
+{
+  Input = "help e\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Screen,
+    "> help e\r\n"
+    "echo: Prints arguments\r\n"
+    "exit: Quits the shell\r\n"
+    "> ");
+}
+
+TEST_F(GivenTtyCrLfShell, WhenSttyEntered_ThenCurrentConfigPrinted)
+{
+  Input = "stty\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Screen,
+    "> stty\r\n"
+    "+clt\r\n"
+    "-r\r\n"
+    "> ");
+}
+
+TEST_F(GivenCrShell, WhenSttyEntered_ThenCurrentConfigPrinted)
+{
+  Input = "stty\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Screen,
+    "+cr\r"
+    "-lt\r");
+}
+
+TEST_F(GivenLfShell, WhenSttyEntered_ThenCurrentConfigPrinted)
+{
+  Input = "stty\r\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_EQ(
+    Screen,
+    "+l\n"
+    "-crt\n");
+}
+
+TEST_F(GivenShell, WhenSttyEntered_AndAllFlagsEnabled_ThenConfigUpdates)
+{
+  Input = "stty clrt\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_TRUE(Shell.Cr);
+  ASSERT_TRUE(Shell.Lf);
+  ASSERT_TRUE(Shell.Eol);
+  ASSERT_TRUE(Shell.Tty);
+}
+
+TEST_F(GivenShell, WhenSttyEnteredWithPlus_AndAllFlagsEnabled_ThenConfigUpdates)
+{
+  Input = "stty +clrt\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_TRUE(Shell.Cr);
+  ASSERT_TRUE(Shell.Lf);
+  ASSERT_TRUE(Shell.Eol);
+  ASSERT_TRUE(Shell.Tty);
+}
+
+TEST_F(GivenTtyCrLfShell, WhenSttyEnteredWithMinus_AndAllFlagsDisabled_ThenConfigUpdates)
+{
+  Input = "stty -clrt\n";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_FALSE(Shell.Cr);
+  ASSERT_FALSE(Shell.Lf);
+  ASSERT_FALSE(Shell.Eol);
+  ASSERT_FALSE(Shell.Tty);
+}
+
+TEST_F(GivenCrShell, WhenSttyEnteredWithMultipleCommands_ThenConfigUpdates)
+{
+  Input = "stty +lt -cr\r";
+  Input += static_cast<char>(EHSH_ASCII_EOT);
+
+  EhExec(&Shell);
+
+  ASSERT_FALSE(Shell.Cr);
+  ASSERT_TRUE(Shell.Lf);
+  ASSERT_FALSE(Shell.Eol);
+  ASSERT_TRUE(Shell.Tty);
 }

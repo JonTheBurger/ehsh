@@ -20,19 +20,27 @@
 // local
 #include <ehsh/ehsh.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // $Functions
 ////////////////////////////////////////////////////////////////////////////////
-/** Prints all available commands with their help strings.
+/** Prints available commands with their help strings.
  *
  * @param shell Shell containing commands to display.
  *
  * @code{.sh}
+ * # help with no arguments prints all commands
  * > help
  * echo: Prints arguments
  * exit: Exits
  * help: Prints commands
- * >
+ * # help with an argument prints all matching commands
+ * > help e
+ * echo: Prints arguments
+ * exit: Exits
  * @endcode
  */
 static inline void EhHelp(EhShell_t* shell)
@@ -40,6 +48,7 @@ static inline void EhHelp(EhShell_t* shell)
   const char* arg = EhArgAt(shell, 0);
   if (arg == NULL)
   {
+    // If no args are provided, a zero length string matches everything
     arg = "";
   }
   size_t prefix = strnlen(arg, EHSH_CMDLINE_SIZE);
@@ -215,5 +224,8 @@ static inline void EhStty(EhShell_t* shell)
     "exit", EHSH_HELP_EXIT, &EhExit, \
   }
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
 /** @} */
 #endif /* EHSH_CMD_H */

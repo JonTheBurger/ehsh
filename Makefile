@@ -58,5 +58,8 @@ update: ## Updates dependent files after updating set(PROJECT_VERSION ...)
 hooks: ## Commands to run as git hooks
 	git clang-format
 
+conan:
+	conan create . -vvv
+
 ci:
 	act -P ubuntu-latest=-self-hosted

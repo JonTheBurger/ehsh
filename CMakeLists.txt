@@ -10,10 +10,12 @@ project(ehsh
   LANGUAGES    C
 )
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
-option(EHSH_BUILD_TESTS    "Build tests"         ${PROJECT_IS_TOP_LEVEL})
-option(EHSH_BUILD_EXAMPLES "Build examples"      ${PROJECT_IS_TOP_LEVEL})
-option(EHSH_BUILD_WARNINGS "Build with warnings" ${PROJECT_IS_TOP_LEVEL})
+option(EHSH_BUILD_TESTS    "Build tests"         "${BUILD_TESTING}")
+option(EHSH_BUILD_EXAMPLES "Build examples"      "${BUILD_TESTING}")
+option(EHSH_BUILD_TESTS    "Build tests"         "${BUILD_TESTING}")
+option(EHSH_BUILD_EXTRAS   "Use docs, linters"   "${BUILD_TESTING}")
 
 if (PROJECT_IS_TOP_LEVEL)
   set(CMAKE_COLOR_DIAGNOSTICS        ON)
@@ -33,13 +35,9 @@ add_library(ehsh)
 add_library(ehsh::ehsh ALIAS ehsh)
 target_sources(ehsh
   PRIVATE
-    "${PROJECT_SOURCE_DIR}/README.md"
-    "${PROJECT_SOURCE_DIR}/CMakePresets.json"
-    "${PROJECT_SOURCE_DIR}/LICENSE.txt"
     src/ehsh.c
   PUBLIC
-    FILE_SET ehsh
-    TYPE HEADERS
+    FILE_SET HEADERS
     BASE_DIRS
       src
     FILES
@@ -68,13 +66,29 @@ set_target_properties(
 )
 install(
   TARGETS  ehsh
-  EXPORT   ehsh
-  FILE_SET ehsh
+  EXPORT   ehsh-targets.cmake
+  FILE_SET HEADERS
 )
 install(
-  EXPORT      ehsh
+  EXPORT      ehsh-targets.cmake
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ehsh"
   NAMESPACE   ehsh::
+  FILE        ehsh-targets.cmake
+)
+configure_package_config_file(
+  "${CMAKE_CURRENT_LIST_DIR}/tools/ehsh-config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/ehsh-config.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ehsh"
+)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/ehsh-version.cmake"
+  COMPATIBILITY SameMajorVersion
+)
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/ehsh-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/ehsh-version.cmake"
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ehsh"
 )
 
 ################################################################################
@@ -157,6 +171,6 @@ endif()
 # Tools
 ################################################################################
 include(CPack)
-if (PROJECT_IS_TOP_LEVEL)
+if (EHSH_BUILD_EXTRAS)
   add_subdirectory(tools)
 endif()

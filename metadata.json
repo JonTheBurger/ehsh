@@ -1,0 +1,17 @@
+{
+  "name": "ehsh",
+  "version": "@PROJECT_VERSION@",
+  "description": "@PROJECT_DESCRIPTION@",
+  "license": "BSL-1.0",
+  "author": "",
+  "homepage": "@PROJECT_HOMEPAGE_URL@",
+  "features": [
+
+  ],
+  "sources": [
+    "src/ehsh.c"
+  ],
+  "includes": [
+    "src"
+  ]
+}

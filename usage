@@ -1,0 +1,4 @@
+ehsh provides CMake targets:
+
+  find_package(ehsh CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE ehsh::ehsh)
